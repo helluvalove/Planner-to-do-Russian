@@ -8,7 +8,7 @@ class DailyJournalApp(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("Ежедневник")
-        self.setGeometry(100, 100, 500, 300)  # Начальные размеры окна
+        self.setGeometry(100, 100, 500, 300)  
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
