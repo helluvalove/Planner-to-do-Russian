@@ -7,7 +7,7 @@ class DailyJournalApp(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Ежедневник1")
+        self.setWindowTitle("Ежедневник")
         self.setGeometry(100, 100, 500, 300)  
 
         self.central_widget = QWidget()
