@@ -57,7 +57,7 @@ class DailyJournalApp(QMainWindow):
         text = self.entry.toPlainText().strip()
         if text:
             current_time = QDateTime.currentDateTime().toString("yyyy-MM-dd HH:mm:ss")
-            entry_with_time = f"{current_time}\n{text}\n"
+            entry_with_time = f"{current_time}: {text}\n"
             with open("daily_journal.txt", "a") as file:
                 file.write(entry_with_time)
             QMessageBox.information(self, "Успешно", "Запись сохранена успешно.")
@@ -73,7 +73,7 @@ class DailyJournalApp(QMainWindow):
             with open("daily_journal.txt", "r") as file:
                 entries = file.readlines()
             if entries:
-                entries_text = "\n".join(entries)
+                entries_text = [entry.strip() for entry in entries]
                 dialog = QInputDialog()
                 chosen_entry, ok = dialog.getItem(self, "Выберите запись", "Записи:", entries_text, 0, False)
                 if ok:
@@ -86,12 +86,8 @@ class DailyJournalApp(QMainWindow):
             QMessageBox.critical(self, "Ошибка", f"Произошла ошибка: {str(e)}")
 
     def edit_chosen_entry(self, chosen_entry):
-        entry_text_parts = chosen_entry.split('\n')
-        if len(entry_text_parts) > 1:
-            text_to_edit = "\n".join(entry_text_parts[1:])
-            self.entry.setPlainText(text_to_edit)
-        else:
-            QMessageBox.information(self, "Пустая запись", "Выбранная запись пуста.")
+        datetime_created, entry_text = chosen_entry.split(':', 1)
+        self.entry.setPlainText(f"{datetime_created}\n{entry_text}")
 
     def save_edited_entry(self, chosen_entry_index, new_entry_text):
         all_entries = []
