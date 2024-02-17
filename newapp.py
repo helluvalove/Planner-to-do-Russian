@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QTextEdit, QPushButton, QVBoxLayout, QWidget, QMessageBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QTextEdit, QPushButton, QVBoxLayout, QWidget, QMessageBox, QInputDialog
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, QDateTime
 
@@ -74,15 +74,39 @@ class DailyJournalApp(QMainWindow):
                 entries = file.readlines()
             if entries:
                 entries_text = "\n".join(entries)
-                QMessageBox.information(self, "Записи", entries_text)
-            else:
-                QMessageBox.information(self, "Записи", "Нет сохраненных записей.")
+                dialog = QInputDialog()
+                chosen_entry, ok = dialog.getItem(self, "Выберите запись", "Записи:", entries_text, 0, False)
+                if ok:
+                    self.edit_chosen_entry(chosen_entry)
+                else:
+                    QMessageBox.information(self, "Записи", "Нет сохраненных записей.")
         except FileNotFoundError:
-            QMessageBox.information(self, "Записи", "Нет сохраненных записей.")
+            QMessageBox.information(self, "Ошибка", "Файл с записями не найден.")
+        except Exception as e: 
+            QMessageBox.critical(self, "Ошибка", f"Произошла ошибка: {str(e)}")
+
+    def edit_chosen_entry(self, chosen_entry):
+        entry_text_parts = chosen_entry.split('\n')
+        if len(entry_text_parts) > 1:
+            text_to_edit = "\n".join(entry_text_parts[1:])
+            self.entry.setPlainText(text_to_edit)
+        else:
+            QMessageBox.information(self, "Пустая запись", "Выбранная запись пуста.")
+
+    def save_edited_entry(self, chosen_entry_index, new_entry_text):
+        all_entries = []
+        with open("daily_journal.txt", "r") as file:
+            all_entries = file.readlines()
+
+        all_entries[chosen_entry_index] = new_entry_text
+
+        with open("daily_journal.txt", "w") as file:
+            for entry in all_entries:
+                file.write(entry)
 
     def edit_entry(self):
         try:
-            with open("daily_journal.txt", "r") as file:
+            with open("dailyjournal.txt", "r") as file:
                 entries = file.readlines()
             if entries:
                 last_entry = entries[-1]
@@ -90,12 +114,12 @@ class DailyJournalApp(QMainWindow):
                 if len(text_parts) > 1:
                     self.entry.setPlainText('\n'.join(text_parts[1:]))
                 else:
-                    QMessageBox.information(self, "Записи", "Нет сохраненных записей для редактирования")
+                    QMessageBox.information(self, "Записи", "Нет текста для редактирования в последней записи")
             else:
-                QMessageBox.information(self, "Записи", "Нет сохраненных записей для редактирования")
+                QMessageBox.information(self,"Записи", "Нет сохраненных записей для редактирования")
         except FileNotFoundError:
             QMessageBox.information(self, "Записи", "Нет сохраненных записей для редактирования")
-
+            
     def update_datetime_label(self):
         current_time = QDateTime.currentDateTime().toString("yyyy-MM-dd HH:mm")
         self.datetime_label.setText(current_time)
@@ -103,5 +127,6 @@ class DailyJournalApp(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = DailyJournalApp()
+    window.update_datetime_label()
     window.show()
     sys.exit(app.exec())
