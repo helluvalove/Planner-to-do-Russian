@@ -1,13 +1,13 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QTextEdit, QPushButton, QVBoxLayout, QWidget, QMessageBox
-from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFont, QIcon
 from PyQt6.QtCore import Qt, QDateTime
 
 class DailyJournalApp(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Ежедневник")
+        self.setWindowTitle("Ежедневник1")
         self.setGeometry(100, 100, 500, 300)  
 
         self.central_widget = QWidget()
@@ -31,25 +31,27 @@ class DailyJournalApp(QMainWindow):
         self.entry.setFont(font)
 
         self.save_button = QPushButton("Сохранить", self)
+        self.save_button.setIcon(QIcon("path_to_icon/save.png"))
+        self.save_button.setStyleSheet("background-color: #007bff; color: white;")
         self.save_button.clicked.connect(self.save_entry)
 
         self.clear_button = QPushButton("Очистить", self)
+        self.clear_button.setStyleSheet("background-color: #007bff; color: white;")
         self.clear_button.clicked.connect(self.clear_entry)
 
-        self.edit_button = QPushButton("Редактировать запись", self) 
-        self.edit_button.clicked.connect(self.edit_entry)
-
         self.read_button = QPushButton("Просмотреть записи", self)
+        self.read_button.setStyleSheet("background-color: #007bff; color: white;")
         self.read_button.clicked.connect(self.read_entries)
 
         layout = QVBoxLayout(self.central_widget)
+        layout.setMargin(10)
+        layout.setSpacing(10)
         layout.addWidget(self.datetime_label)
         layout.addWidget(self.title_label)
         layout.addWidget(self.entry)
         layout.addWidget(self.save_button)
         layout.addWidget(self.clear_button)
         layout.addWidget(self.read_button)
-        layout.addWidget(self.edit_button)
 
         self.update_datetime_label()
 
@@ -60,7 +62,7 @@ class DailyJournalApp(QMainWindow):
             entry_with_time = f"{current_time}\n{text}\n"
             with open("daily_journal.txt", "a") as file:
                 file.write(entry_with_time)
-            QMessageBox.information(self, "Успешно", "Запись сохранена успешно.")
+            QMessageBox.information(self, "Успешно", "Запись сохранена успешно.", QMessageBox.Ok, Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint).setStyleSheet("QMessageBox:animated { background-color: #007bff; color: white; }")
             self.clear_entry()
         else:
             QMessageBox.warning(self, "Пустая запись", "Введите текст записи перед сохранением.")
@@ -68,40 +70,16 @@ class DailyJournalApp(QMainWindow):
     def clear_entry(self):
         self.entry.clear()
 
-    def read_entries(self):
-        try:
-            with open("daily_journal.txt", "r") as file:
-                entries = file.readlines()
-            if entries:
-                entries_text = "\n".join(entries)
-                QMessageBox.information(self, "Записи", entries_text)
-            else:
-                QMessageBox.information(self, "Записи", "Нет сохраненных записей.")
-        except FileNotFoundError:
+def read_entries(self):
+    try:
+        with open("daily_journal.txt", "r") as file:
+            entries = file.readlines()
+        if entries:
+            entries_text = "\n".join(entries)
+            QMessageBox.information(self, "Записи", entries_text)
+        else:
             QMessageBox.information(self, "Записи", "Нет сохраненных записей.")
+    except FileNotFoundError:
+        QMessageBox.information(self, "Записи", "Нет сохраненных записей.")
 
-    def edit_entry(self):
-        try:
-            with open("daily_journal.txt", "r") as file:
-                entries = file.readlines()
-            if entries:
-                last_entry = entries[-1]
-                text_parts = last_entry.split('\n')
-                if len(text_parts) > 1:
-                    self.entry.setPlainText('\n'.join(text_parts[1:]))
-                else:
-                    QMessageBox.information(self, "Записи", "Нет сохраненных записей для редактирования")
-            else:
-                QMessageBox.information(self, "Записи", "Нет сохраненных записей для редактирования")
-        except FileNotFoundError:
-            QMessageBox.information(self, "Записи", "Нет сохраненных записей для редактирования")
-
-    def update_datetime_label(self):
-        current_time = QDateTime.currentDateTime().toString("yyyy-MM-dd HH:mm")
-        self.datetime_label.setText(current_time)
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = DailyJournalApp()
-    window.show()
-    sys.exit(app.exec())
+                
