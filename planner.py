@@ -23,7 +23,6 @@ from os import path
 
 
 class Calendar(QWidget):
-    # keep the current time as class variable for reference
     currentDay = str(datetime.now().day).rjust(2, "0")
     currentMonth = str(datetime.now().month).rjust(2, "0")
     currentYear = str(datetime.now().year).rjust(2, "0")
@@ -33,7 +32,7 @@ class Calendar(QWidget):
         folder = path.dirname(__file__)
         self.icon_folder = path.join(folder, "icons")
 
-        self.setWindowTitle("Planner")
+        self.setWindowTitle("Daily Planner")
         self.setWindowIcon(QtGui.QIcon(path.join(self.icon_folder, "window.png")))
 
         self.setGeometry(width // 4, height // 4, width // 2, height // 2)
@@ -43,35 +42,28 @@ class Calendar(QWidget):
         self.calendar = QCalendarWidget()
         self.calendar.setGridVisible(True)
 
-        # format for dates in calendar that have events
         self.fmt = QTextCharFormat()
         self.fmt.setBackground(QColor(255, 165, 0, 100))
 
-        # format for the current day
         cur_day_fmt = QTextCharFormat()
         cur_day_fmt.setBackground(QColor(0, 255, 90, 70))
 
-        # format to change back to if all events are deleted
         self.delfmt = QTextCharFormat()
         self.delfmt.setBackground(Qt.transparent)
 
-        # check if json file exists, if it does load the data from it
         self.data = {}
         file_exists = path.isfile(path.join(path.dirname(__file__), "data.json"))
         if file_exists:
             with open("data.json", "r") as json_file:
                 self.data = json.load(json_file)
 
-        # format the dates in the calendar that have events
         cur_date = QDate.currentDate()
         for date in list(self.data.keys()):
             qdate = QDate.fromString(date, "ddMMyyyy")
             self.calendar.setDateTextFormat(qdate, self.fmt)
 
-        # mark current day in calendar
         self.calendar.setDateTextFormat(cur_date, cur_day_fmt)
 
-        # organize buttons and layouts for display
         self.addButton = QPushButton("Add Event")
         self.addButton.clicked.connect(self.addNote)
         self.editButton = QPushButton("Edit")
@@ -100,7 +92,6 @@ class Calendar(QWidget):
         pixmap = QPixmap(path.join(self.icon_folder, "calendar.png"))
         labelp.setPixmap(pixmap)
 
-        # set up a timer that automatically updates every second
         self.lcd = QLCDNumber()
         self.lcd.setSegmentStyle(QLCDNumber.Filled)
         self.lcd.setMinimumWidth(80)
@@ -137,7 +128,6 @@ class Calendar(QWidget):
         self.setLayout(hbox)
 
     def showDateInfo(self):
-        # add events to selected date
         date = self.getDate()
         self.note_group.clear()
         if date in self.data:
@@ -152,10 +142,6 @@ class Calendar(QWidget):
             button.setEnabled(enabled)
 
     def addNote(self):
-        # adding notes for selected date
-        # if a note starts with any number other than 0, 1, 2
-        # add a 0 before it so that we can easily sort events
-        # by start time
         date = self.getDate()
         row = self.note_group.currentRow()
         title = "Add event"
@@ -174,7 +160,6 @@ class Calendar(QWidget):
                 self.data[date] = [string]
 
     def delNote(self):
-        # delete the currently selected item
         date = self.getDate()
         row = self.note_group.currentRow()
         item = self.note_group.item(row)
@@ -196,7 +181,6 @@ class Calendar(QWidget):
             del item
 
     def editNote(self):
-        # edit the currently selected item
         date = self.getDate()
         row = self.note_group.currentRow()
         item = self.note_group.item(row)
@@ -216,7 +200,6 @@ class Calendar(QWidget):
                 item.setText(string)
 
     def getDate(self):
-        # parse the selected date into usable string form
         select = self.calendar.selectedDate()
         date = (
             str(select.day()).rjust(2, "0")
@@ -226,8 +209,6 @@ class Calendar(QWidget):
         return date
 
     def labelDate(self):
-        # label to show the long name form of the selected date
-        # format US style like "Thursday, February 20, 2020"
         select = self.calendar.selectedDate()
         weekday, month = select.dayOfWeek(), select.month()
         day, year = str(select.day()), str(select.year())
@@ -235,12 +216,10 @@ class Calendar(QWidget):
         self.label.setText(week_day + ", " + word_month + " " + day + ", " + year)
 
     def highlightFirstItem(self):
-        # highlight the first item immediately after switching selection
         if self.note_group.count() > 0:
             self.note_group.setCurrentRow(0)
 
     def showTime(self):
-        # keep the current time updated
         time = QTime.currentTime()
         text = time.toString("hh:mm")
         if time.second() % 2 == 0:
@@ -248,7 +227,6 @@ class Calendar(QWidget):
         self.lcd.display(text)
 
     def closeEvent(self, e):
-        # save all data into json file when user closes app
         with open("data.json", "w") as json_file:
             json.dump(self.data, json_file)
         e.accept()
