@@ -18,7 +18,6 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import QDate, Qt, QTimer, QTime
 from PyQt5 import QtGui
 from PyQt5.QtGui import QTextCharFormat, QColor, QPixmap
-from style import STYLESHEET
 from os import path
 
 
@@ -142,6 +141,10 @@ class Calendar(QWidget):
             button.setEnabled(enabled)
 
     def addNote(self):
+        # adding notes for selected date
+        # if a note starts with any number other than 0, 1, 2
+        # add a 0 before it so that we can easily sort events
+        # by start time
         date = self.getDate()
         row = self.note_group.currentRow()
         title = "Add event"
@@ -234,7 +237,18 @@ class Calendar(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setStyleSheet(STYLESHEET)
+    app.setStyleSheet("QPushButton {border-style: solid; border-radius: 5px; \
+                           border-width: 1px; border-color: rgba(0,0,0,80); padding: 5px} \
+              QPushButton:hover {background-color: rgba(0, 0, 255, 0.05)} \
+              QListWidget {background-color: rgb(230, 230, 230); border-style: solid;\
+                           border-radius: 10px; border-width: 1px; border-color: rgba(0,0,0,80);} \
+              QListWidget::item:selected {background-color: rgba(0, 0, 255, 0.1); border-radius: 10px; \
+                                          border-style: solid; border-width: 1px; border-color: rgba(0,0,0,80); \
+                                          color: black}\
+              QListWidget::item:hover {background-color: rgba(0, 255, 0, 0.1); border-radius: 10px; \
+                                       border-style: solid; border-width: 1px; border-color: rgba(0,0,0,80)}\
+              QLCDNumber {border-style: solid; border-radius: 8px; background-color: rgb(230, 230, 230); \
+                          border-width: 1px; border-color: rgba(0,0,0,80);}")
     screen = app.primaryScreen()
     size = screen.size()
     window = Calendar(size.width(), size.height())
