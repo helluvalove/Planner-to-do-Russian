@@ -165,14 +165,18 @@ class Calendar(QWidget):
             self.note_group.clear()
             if date in self.data:
                 for note in self.data[date]:
-                    # Проверяем, есть ли символ ":" в записи
-                    if ":" in note:
-                        mainNote, additionalNote = note.split(":", 1)
+                    if isinstance(note, dict):  # Добавлено условие для проверки типа данных
+                        mainNote = note["mainNote"]
+                        additionalNote = note["additionalNote"]
                     else:
-                        # Если символ ":" отсутствует, считаем всю запись основной заметкой
-                        mainNote = note
-                        additionalNote = ""
-                    listItem, widget = createCustomListItem(mainNote, additionalNote)
+                        # Проверяем, есть ли символ ":" в записи
+                        if ":" in note:
+                            mainNote, additionalNote = note.split(":", 1)
+                        else:
+                            # Если символ ":" отсутствует, считаем всю запись основной заметкой
+                            mainNote = note
+                            additionalNote = ""
+                    listItem, widget = createCustomListItem(str(mainNote), str(additionalNote))  # Преобразование в строки
                     self.note_group.addItem(listItem)
                     self.note_group.setItemWidget(listItem, widget)
             else:
@@ -182,7 +186,6 @@ class Calendar(QWidget):
                 QMessageBox.information(self, "No Notes", "There are no notes for the selected date.")
         except Exception as e:
             print("An error occurred in showDateInfo:", e)
-
 
     def updateDateInfo(self):
         self.showDateInfo()
