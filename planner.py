@@ -1,3 +1,6 @@
+from add_note_dialog import AddNoteDialog
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QLabel, QPushButton, QDialogButtonBox, QInputDialog, QListWidgetItem
+from PyQt5.QtCore import QDate
 import sys
 from datetime import datetime
 import json
@@ -20,6 +23,29 @@ from PyQt5 import QtGui
 from PyQt5.QtGui import QTextCharFormat, QColor, QPixmap
 from os import path
 
+def createCustomListItem(mainNote, additionalNote):
+        # Создаем виджет, который будет содержать наш текст
+        widget = QWidget()
+        layout = QVBoxLayout()
+
+        # Создаем два QLabel для mainNote и additionalNote
+        mainNoteLabel = QLabel(mainNote)
+        additionalNoteLabel = QLabel(additionalNote)
+        mainNoteLabel.setStyleSheet("font-weight: bold;")
+        additionalNoteLabel.setStyleSheet("font-size: 10px;")  # Скрываем текст, если он длинный
+
+        # Добавляем QLabel в layout
+        layout.addWidget(mainNoteLabel)
+        layout.addWidget(additionalNoteLabel)
+        widget.setLayout(layout)
+
+        # Создаем QListWidgetItem
+        listItem = QListWidgetItem()
+
+        # Важно! Настраиваем размер виджета в соответствии с содержимым
+        listItem.setSizeHint(widget.sizeHint())
+
+        return listItem, widget 
 
 class Calendar(QWidget):
     currentDay = str(datetime.now().day).rjust(2, "0")
@@ -36,6 +62,8 @@ class Calendar(QWidget):
 
         self.setGeometry(width // 4, height // 4, width // 2, height // 2)
         self.initUI()
+
+   
 
     def initUI(self):
         self.calendar = QCalendarWidget()
@@ -86,6 +114,7 @@ class Calendar(QWidget):
         self.label.setFont(label_font)
         self.labelDate()
         self.showDateInfo()
+        self.note_group.itemDoubleClicked.connect(self.showFullNote)
 
         labelp = QLabel()
         pixmap = QPixmap(path.join(self.icon_folder, "calendar.png"))
@@ -130,7 +159,11 @@ class Calendar(QWidget):
         date = self.getDate()
         self.note_group.clear()
         if date in self.data:
-            self.note_group.addItems(self.data[date])
+            for note in self.data[date]:
+                mainNote, additionalNote = note.split(":", 1)
+                listItem, widget = createCustomListItem(mainNote, additionalNote)
+                self.note_group.addItem(listItem)
+                self.note_group.setItemWidget(listItem, widget)
 
     def selectToday(self):
         self.calendar.setSelectedDate(QDate.currentDate())
@@ -139,68 +172,108 @@ class Calendar(QWidget):
         enabled = self.calendar.selectedDate() >= QDate.currentDate()
         for button in [self.addButton, self.editButton, self.delButton]:
             button.setEnabled(enabled)
+    
+    def showFullNote(self, item):
+        widget = self.note_group.itemWidget(item)
+        mainNote = widget.layout().itemAt(0).widget().text()
+        additionalNote = widget.layout().itemAt(1).widget().text()
+        QMessageBox.information(self, "Full Note", f"{mainNote}\n{additionalNote}")
 
     def addNote(self):
-        # adding notes for selected date
-        # if a note starts with any number other than 0, 1, 2
-        # add a 0 before it so that we can easily sort events
-        # by start time
-        date = self.getDate()
-        row = self.note_group.currentRow()
-        title = "Add event"
-        string, ok = QInputDialog.getText(self, " ", title)
+        dialog = AddNoteDialog(self)
+        if dialog.exec_() == QDialog.Accepted:
+            mainNote, additionalNote = dialog.getInputs()
 
-        if ok and string:
-            if string[0].isdigit() and string[0] not in ["0", "1", "2"]:
-                string = string.replace(string[0], "0" + string[0])
-            self.note_group.insertItem(row, string)
-            self.calendar.setDateTextFormat(
-                QDate.fromString(date, "ddMMyyyy"), self.fmt
-            )
-            if date in self.data:
-                self.data[date].append(string)
+            # Получаем текущую выбранную дату
+            date = self.getDate()
+
+            # Проверяем, не начинается ли основная заметка с цифры, отличной от 0, 1, 2
+            if mainNote and mainNote[0].isdigit() and mainNote[0] not in ["0", "1", "2"]:
+                mainNote = "0" + mainNote
+
+            # Соединяем заметки, если есть дополнительная заметка
+            if additionalNote:
+                completeNote = f"{mainNote}: {additionalNote}"
             else:
-                self.data[date] = [string]
+                completeNote = mainNote
+
+            # Вставляем полученную заметку в список заметок
+            row = self.note_group.currentRow()
+            self.note_group.insertItem(row, completeNote)
+            
+            # Обновляем формат даты в календаре
+            self.calendar.setDateTextFormat(QDate.fromString(date, "ddMMyyyy"), self.fmt)
+            
+            # Обновляем данные
+            if date in self.data:
+                self.data[date].append(completeNote)
+            else:
+                    self.data[date] = [completeNote]
+            self.showDateInfo()
 
     def delNote(self):
-        date = self.getDate()
-        row = self.note_group.currentRow()
-        item = self.note_group.item(row)
+        try:
+            item = self.note_group.currentItem()
 
-        if not item:
-            return
-        reply = QMessageBox.question(
-            self, " ", "Remove", QMessageBox.Yes | QMessageBox.No
-        )
-
-        if reply == QMessageBox.Yes:
-            item = self.note_group.takeItem(row)
-            self.data[date].remove(item.text())
-            if not self.data[date]:
-                del self.data[date]
-                self.calendar.setDateTextFormat(
-                    QDate.fromString(date, "ddMMyyyy"), self.delfmt
+            if item:
+                reply = QMessageBox.question(
+                    self, "Подтверждение удаления", "Вы уверены, что хотите удалить эту заметку?",
+                    QMessageBox.Yes | QMessageBox.No
                 )
-            del item
 
+                if reply == QMessageBox.Yes:
+                    # Получаем текст заметки из элемента списка
+                    mainNote = item.text().split(":")[0]
+                    additionalNote = item.text().split(":")[1] if ":" in item.text() else ""
+                    noteText = f"{mainNote}: {additionalNote}" if additionalNote else mainNote
+
+                    # Удаляем заметку из данных
+                    for date, notes in self.data.items():
+                        if noteText in notes:
+                            notes.remove(noteText)
+                            if not notes:
+                                del self.data[date]
+                                self.calendar.setDateTextFormat(QDate.fromString(date, "ddMMyyyy"), self.delfmt)
+
+                    # Сохраняем изменения в файл
+                    with open("data.json", "w") as json_file:
+                        json.dump(self.data, json_file)
+
+                    # Удаляем элемент из списка виджетов
+                    self.note_group.takeItem(self.note_group.row(item))
+
+                    # Обновляем интерфейс (если необходимо)
+                    # self.update_interface()  # Раскомментируйте эту строку, если есть метод обновления интерфейса
+
+                    return
+                else:
+                    print("Заметка не удалена. Пользователь отменил удаление.")
+            else:
+                print("Заметка не выбрана. Нечего удалять.")
+        except Exception as e:
+            print("Произошла ошибка:", e)
+            
     def editNote(self):
         date = self.getDate()
         row = self.note_group.currentRow()
         item = self.note_group.item(row)
 
         if item:
-            copy = item.text()
-            title = "Edit event"
-            string, ok = QInputDialog.getText(
-                self, " ", title, QLineEdit.Normal, item.text()
-            )
+            widget = self.note_group.itemWidget(item)
+            mainNote = widget.layout().itemAt(0).widget().text()
+            additionalNote = widget.layout().itemAt(1).widget().text()
 
-            if ok and string:
-                self.data[date].remove(copy)
-                self.data[date].append(string)
-                if string[0].isdigit() and string[0] not in ["0", "1", "2"]:
-                    string = string.replace(string[0], "0" + string[0])
-                item.setText(string)
+            dialog = AddNoteDialog(self)
+            dialog.firstInput.setText(mainNote)
+            dialog.secondInput.setText(additionalNote)
+
+            if dialog.exec_() == QDialog.Accepted:
+                editedMainNote, editedAdditionalNote = dialog.getInputs()
+
+                editedNote = f"{editedMainNote}: {editedAdditionalNote}" if editedAdditionalNote else editedMainNote
+                self.data[date][row] = editedNote
+
+                self.showDateInfo()
 
     def getDate(self):
         select = self.calendar.selectedDate()
