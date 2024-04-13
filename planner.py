@@ -108,9 +108,10 @@ class Calendar(QWidget):
         self.calendar.selectionChanged.connect(self.updateDateInfo)
 
         self.note_group = QListWidget()
+        self.note_group.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.note_group.setSortingEnabled(True)
         self.note_group.setStyleSheet("QListView::item {height: 40px;}")
-
+        self.note_group.setStyleSheet("QListView::item {width: 300px;}")
         todayButton = QPushButton("Today")
         todayButton.clicked.connect(self.selectToday)
         self.label = QLabel()
@@ -164,6 +165,7 @@ class Calendar(QWidget):
         try:
             date = self.getDate()
             self.note_group.clear()
+            self.note_group.setFixedWidth(300)
             if date in self.data:
                 for note in self.data[date]:
                     if isinstance(note, dict):  # Добавлено условие для проверки типа данных
@@ -178,6 +180,9 @@ class Calendar(QWidget):
                             mainNote = note
                             additionalNote = ""
                     listItem, widget = createCustomListItem(str(mainNote), str(additionalNote))  # Преобразование в строки
+                    
+                    widget.setFixedWidth(300)
+
                     self.note_group.addItem(listItem)
                     self.note_group.setItemWidget(listItem, widget)
             else:
@@ -331,7 +336,7 @@ if __name__ == "__main__":
                            border-width: 1px; border-color: rgba(0,0,0,80); padding: 5px} \
               QPushButton:hover {background-color: rgba(0, 0, 255, 0.05)} \
               QListWidget {background-color: rgb(230, 230, 230); border-style: solid;\
-                           border-radius: 10px; border-width: 1px; border-color: rgba(0,0,0,80);} \
+                           border-radius: 10px; border-width: 1px; border-color: rgba(0,0,0,80); width: 300px;} \
               QListWidget::item:selected {background-color: rgba(0, 0, 255, 0.1); border-radius: 10px; \
                                           border-style: solid; border-width: 1px; border-color: rgba(0,0,0,80); \
                                           color: black}\
