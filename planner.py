@@ -125,8 +125,9 @@ class Calendar(QWidget):
         labelp.setPixmap(pixmap)
 
         self.lcd = QLCDNumber()
-        self.lcd.setSegmentStyle(QLCDNumber.Filled)
+        self.lcd.setSegmentStyle(QLCDNumber.SegmentStyle.Filled)
         self.lcd.setMinimumWidth(80)
+        self.lcd.setStyleSheet("background-color: rgba(0, 0, 0, 0.2); color: white;")
         timer = QTimer(self)
         timer.timeout.connect(self.showTime)
         timer.start(1000)
@@ -209,13 +210,10 @@ class Calendar(QWidget):
             dialog = AddNoteDialog(self)
             if dialog.exec_() == QDialog.Accepted:
                 mainNote, additionalNote = dialog.getInputs()
-
+                if not mainNote:
+                    return
                 # Получаем текущую выбранную дату
                 date = self.getDate()
-
-                # Проверяем, не начинается ли основная заметка с цифры, отличной от 0, 1, 2
-                #if mainNote and mainNote[0].isdigit() and mainNote[0] not in ["0", "1", "2"]:
-                    #mainNote = "0" + mainNote
 
                 # Обновляем данные
                 if date in self.data:
@@ -288,7 +286,13 @@ class Calendar(QWidget):
                 editedMainNote, editedAdditionalNote = dialog.getInputs()
 
                 editedNote = f"{editedMainNote}: {editedAdditionalNote}" if editedAdditionalNote else editedMainNote
-                self.data[date][row] = editedNote
+                leng = len(self.data[date])
+                print("otladka", leng)
+                if leng > 1:
+                    for_searh = leng-1 - row
+                else:
+                    for_searh = row
+                self.data[date][for_searh] = editedNote
 
                 self.showDateInfo()
 
@@ -334,7 +338,7 @@ if __name__ == "__main__":
               QListWidget::item:hover {background-color: rgba(0, 255, 0, 0.1); border-radius: 10px; \
                                        border-style: solid; border-width: 1px; border-color: rgba(0,0,0,80)}\
               QLCDNumber {border-style: solid; border-radius: 8px; background-color: rgb(230, 230, 230); \
-                          border-width: 1px; border-color: rgba(0,0,0,80);}")
+                          border-width: 1px; border-color: rgba(0,0,0,80); color: black}")
     screen = app.primaryScreen()
     size = screen.size()
     window = Calendar(size.width(), size.height())
