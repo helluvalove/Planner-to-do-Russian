@@ -214,8 +214,8 @@ class Calendar(QWidget):
                 date = self.getDate()
 
                 # Проверяем, не начинается ли основная заметка с цифры, отличной от 0, 1, 2
-                if mainNote and mainNote[0].isdigit() and mainNote[0] not in ["0", "1", "2"]:
-                    mainNote = "0" + mainNote
+                #if mainNote and mainNote[0].isdigit() and mainNote[0] not in ["0", "1", "2"]:
+                    #mainNote = "0" + mainNote
 
                 # Обновляем данные
                 if date in self.data:
@@ -252,7 +252,14 @@ class Calendar(QWidget):
 
                         # Удаляем запись из данных
                         if date in self.data:
-                            del self.data[date][currentRow]
+                            print("otladka", currentRow)
+                            leng = len(self.data[date])
+                            print("otladka", leng)
+                            if leng > 1:
+                                for_searh = leng-1 - currentRow
+                            else:
+                                for_searh = currentRow
+                            del self.data[date][for_searh]
                             if not self.data[date]:
                                 del self.data[date]
                                 self.calendar.setDateTextFormat(QDate.fromString(date, "ddMMyyyy"), self.delfmt)
