@@ -25,7 +25,7 @@ from os import path
 
 from PyQt5.QtWidgets import QLabel, QWidget, QVBoxLayout, QListWidgetItem, QSizePolicy
 
-def createCustomListItem(mainNote, additionalNote, max_length=40):
+def createCustomListItem(mainNote, additionalNote, max_length=50):
     # Создаем виджет, который будет содержать наш текст
     widget = QWidget()
     layout = QVBoxLayout(widget)
@@ -60,12 +60,23 @@ def createCustomListItem(mainNote, additionalNote, max_length=40):
 
     return listItem, widget
 
-def truncate_text(text, max_length):
-    # Удаляем переносы строк из текста для создания однострочного текста
-    single_line_text = ' '.join(text.splitlines())
-    if len(single_line_text) > max_length:
-        return single_line_text[:max_length-3] + "..."
-    return single_line_text
+def truncate_text(text, max_length=50):
+    lines = text.splitlines()
+    if not lines:
+        return ""
+
+    first_line = lines[0].strip()
+
+    # Если в тексте только одна строка и она короткая, не добавляем многоточие
+    if len(lines) == 1 and len(first_line) <= max_length:
+        return first_line
+
+    # Если в первой строке больше одного слова и длина превышает max_length, обрезаем до max_length
+    if len(first_line.split()) > 1 and len(first_line) > max_length:
+        return first_line[:max_length-3] + "..."
+    
+    # Если в тексте более одной строки или одно длинное слово
+    return first_line[:max_length] + "..." if len(first_line) > max_length or len(lines) > 1 else first_line
 
 class Calendar(QWidget):
     currentDay = str(datetime.now().day).rjust(2, "0")
@@ -326,7 +337,8 @@ class Calendar(QWidget):
                 # Убираем пробелы с обоих концов строк, полученных из диалогового окна
                 editedMainNote = editedMainNote.strip()
                 editedAdditionalNote = editedAdditionalNote.strip()
-
+                if not editedMainNote:
+                    return
                 editedNote = f"{editedMainNote}: {editedAdditionalNote}" if editedAdditionalNote else editedMainNote
 
                 # Обновляем данные
