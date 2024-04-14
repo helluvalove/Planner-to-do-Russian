@@ -88,7 +88,7 @@ class Calendar(QWidget):
         folder = path.dirname(__file__)
         self.icon_folder = path.join(folder, "icons")
 
-        self.setWindowTitle("Daily Planner")
+        self.setWindowTitle("Ежедневник")
         self.setWindowIcon(QtGui.QIcon(path.join(self.icon_folder, "window.png")))
 
         self.setGeometry(width // 4, height // 4, width // 2, height // 2)
@@ -125,11 +125,11 @@ class Calendar(QWidget):
 
         self.calendar.setDateTextFormat(cur_date, cur_day_fmt)
 
-        self.addButton = QPushButton("Add Event")
+        self.addButton = QPushButton("Добавить")
         self.addButton.clicked.connect(self.addNote)
-        self.editButton = QPushButton("Edit")
+        self.editButton = QPushButton("Изменить")
         self.editButton.clicked.connect(self.editNote)
-        self.delButton = QPushButton("Delete")
+        self.delButton = QPushButton("Удалить")
         self.delButton.clicked.connect(self.delNote)
 
         self.calendar.selectionChanged.connect(self.showDateInfo)
@@ -152,7 +152,7 @@ class Calendar(QWidget):
         }
     """)
         #self.note_group.setStyleSheet("QListView::item {width: 300px;}")
-        todayButton = QPushButton("Today")
+        todayButton = QPushButton("Сегодня")
         todayButton.clicked.connect(self.selectToday)
         self.label = QLabel()
         label_font = QtGui.QFont("Arial", 16)
@@ -229,7 +229,7 @@ class Calendar(QWidget):
                 # Проверяем, если файл пустой или это первый запуск программы, то не выводим сообщение
                 if not self.data or not self.first_run:
                     return
-                QMessageBox.information(self, "No Notes", "There are no notes for the selected date.")
+                #QMessageBox.information(self, "No Notes", "There are no notes for the selected date.")
         except Exception as e:
             print("An error occurred in showDateInfo:", e)
 
@@ -285,10 +285,14 @@ class Calendar(QWidget):
             if currentRow >= 0:
                 item = self.note_group.item(currentRow)
                 if item:
-                    reply = QMessageBox.question(
-                        self, "Confirm Deletion", "Are you sure you want to delete this note?",
-                        QMessageBox.Yes | QMessageBox.No
-                    )
+                    msgBox = QMessageBox()
+                    msgBox.setIcon(QMessageBox.Question)
+                    msgBox.setWindowTitle("Подтверждение удаления")
+                    msgBox.setText("Вы уверены, что хотите удалить эту запись?")
+                    msgBox.addButton("Да", QMessageBox.YesRole)
+                    msgBox.addButton("Нет", QMessageBox.NoRole)
+                    reply = msgBox.exec_()
+
                     if reply == QMessageBox.Yes:
                         # Получаем текущую выбранную дату
                         date = self.getDate()
