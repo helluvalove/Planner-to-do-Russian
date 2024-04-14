@@ -23,29 +23,49 @@ from PyQt5 import QtGui
 from PyQt5.QtGui import QTextCharFormat, QColor, QPixmap
 from os import path
 
-def createCustomListItem(mainNote, additionalNote):
-        # Создаем виджет, который будет содержать наш текст
-        widget = QWidget()
-        layout = QVBoxLayout()
+from PyQt5.QtWidgets import QLabel, QWidget, QVBoxLayout, QListWidgetItem, QSizePolicy
 
-        # Создаем два QLabel для mainNote и additionalNote
-        mainNoteLabel = QLabel(mainNote)
-        additionalNoteLabel = QLabel(additionalNote)
-        mainNoteLabel.setStyleSheet("font-weight: bold;")
-        additionalNoteLabel.setStyleSheet("font-size: 10px;")  # Скрываем текст, если он длинный
+def createCustomListItem(mainNote, additionalNote, max_length=40):
+    # Создаем виджет, который будет содержать наш текст
+    widget = QWidget()
+    layout = QVBoxLayout(widget)
 
-        # Добавляем QLabel в layout
-        layout.addWidget(mainNoteLabel)
-        layout.addWidget(additionalNoteLabel)
-        widget.setLayout(layout)
+    # Создаем QLabel для mainNote, усекаем текст только для отображения
+    mainNoteLabel = QLabel(mainNote)
+    mainNoteLabel.setStyleSheet("font-weight: bold;")
 
-        # Создаем QListWidgetItem
-        listItem = QListWidgetItem()
+    # Создаем QLabel для additionalNote, усекаем текст только для отображения
+    truncatedAdditionalNote = truncate_text(additionalNote, max_length)
+    additionalNoteLabel = QLabel(truncatedAdditionalNote)
+    additionalNoteLabel.setMaximumWidth(280)  # Устанавливаем максимальную ширину для текста
+    additionalNoteLabel.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
+    additionalNoteLabel.setStyleSheet("""
+        font-size: 10px;
+        color: black;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        margin: 0;
+        padding: 0;
+    """)
 
-        # Важно! Настраиваем размер виджета в соответствии с содержимым
-        listItem.setSizeHint(widget.sizeHint())
+    # Добавляем QLabel в layout
+    layout.addWidget(mainNoteLabel)
+    layout.addWidget(additionalNoteLabel)
 
-        return listItem, widget 
+    # Создаем QListWidgetItem и настраиваем размер виджета
+    listItem = QListWidgetItem()
+    listItem.setData(Qt.UserRole, {"mainNote": mainNote, "additionalNote": additionalNote})
+    listItem.setSizeHint(widget.sizeHint())
+
+    return listItem, widget
+
+def truncate_text(text, max_length):
+    # Удаляем переносы строк из текста для создания однострочного текста
+    single_line_text = ' '.join(text.splitlines())
+    if len(single_line_text) > max_length:
+        return single_line_text[:max_length-3] + "..."
+    return single_line_text
 
 class Calendar(QWidget):
     currentDay = str(datetime.now().day).rjust(2, "0")
@@ -110,8 +130,17 @@ class Calendar(QWidget):
         self.note_group = QListWidget()
         self.note_group.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.note_group.setSortingEnabled(True)
-        self.note_group.setStyleSheet("QListView::item {height: 40px;}")
-        self.note_group.setStyleSheet("QListView::item {width: 300px;}")
+        self.note_group.setStyleSheet("""
+        QListView::item {
+            height: 40px;
+        }
+        QListView {
+            border-radius: 10px;
+            border-width: 1px;
+            border-color: rgba(0,0,0,80);
+        }
+    """)
+        #self.note_group.setStyleSheet("QListView::item {width: 300px;}")
         todayButton = QPushButton("Today")
         todayButton.clicked.connect(self.selectToday)
         self.label = QLabel()
@@ -205,9 +234,10 @@ class Calendar(QWidget):
             button.setEnabled(enabled)
     
     def showFullNote(self, item):
-        widget = self.note_group.itemWidget(item)
-        mainNote = widget.layout().itemAt(0).widget().text()
-        additionalNote = widget.layout().itemAt(1).widget().text()
+        # Извлекаем полные данные заметки
+        note_data = item.data(Qt.UserRole)
+        mainNote = note_data["mainNote"]
+        additionalNote = note_data["additionalNote"]
         QMessageBox.information(self, "Full Note", f"{mainNote}\n{additionalNote}")
 
     def addNote(self):
@@ -219,6 +249,8 @@ class Calendar(QWidget):
                     return
                 # Получаем текущую выбранную дату
                 date = self.getDate()
+
+                self.calendar.setDateTextFormat(QDate.fromString(date, "ddMMyyyy"), self.fmt)
 
                 # Обновляем данные
                 if date in self.data:
@@ -279,27 +311,31 @@ class Calendar(QWidget):
         item = self.note_group.item(row)
 
         if item:
-            widget = self.note_group.itemWidget(item)
-            mainNote = widget.layout().itemAt(0).widget().text()
-            additionalNote = widget.layout().itemAt(1).widget().text()
+            # Получаем полные данные из элемента списка
+            note_data = item.data(Qt.UserRole)
+            mainNote = note_data["mainNote"]
+            additionalNote = note_data["additionalNote"]
 
             dialog = AddNoteDialog(self)
-            dialog.firstInput.setText(mainNote)
-            dialog.secondInput.setText(additionalNote)
+            dialog.firstInput.setText(mainNote.strip())  # Убираем пробелы
+            dialog.secondInput.setText(additionalNote.strip())  # Убираем пробелы
 
             if dialog.exec_() == QDialog.Accepted:
                 editedMainNote, editedAdditionalNote = dialog.getInputs()
 
-                editedNote = f"{editedMainNote}: {editedAdditionalNote}" if editedAdditionalNote else editedMainNote
-                leng = len(self.data[date])
-                print("otladka", leng)
-                if leng > 1:
-                    for_searh = leng-1 - row
-                else:
-                    for_searh = row
-                self.data[date][for_searh] = editedNote
+                # Убираем пробелы с обоих концов строк, полученных из диалогового окна
+                editedMainNote = editedMainNote.strip()
+                editedAdditionalNote = editedAdditionalNote.strip()
 
+                editedNote = f"{editedMainNote}: {editedAdditionalNote}" if editedAdditionalNote else editedMainNote
+
+                # Обновляем данные
+                for_search = len(self.data[date]) - 1 - row if len(self.data[date]) > 1 else row
+                self.data[date][for_search] = editedNote
+
+                # Обновляем отображение заметок
                 self.showDateInfo()
+
 
     def getDate(self):
         select = self.calendar.selectedDate()
@@ -343,7 +379,8 @@ if __name__ == "__main__":
               QListWidget::item:hover {background-color: rgba(0, 255, 0, 0.1); border-radius: 10px; \
                                        border-style: solid; border-width: 1px; border-color: rgba(0,0,0,80)}\
               QLCDNumber {border-style: solid; border-radius: 8px; background-color: rgb(230, 230, 230); \
-                          border-width: 1px; border-color: rgba(0,0,0,80); color: black}")
+                          border-width: 1px; border-color: rgba(0,0,0,80);")
+
     screen = app.primaryScreen()
     size = screen.size()
     window = Calendar(size.width(), size.height())
