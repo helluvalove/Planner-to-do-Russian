@@ -50,6 +50,7 @@ class Ui_AddNote(object):
         self.caption.setObjectName("caption")
         self.caption.setGeometry(QtCore.QRect(0, 0, 311, 100))
         self.caption.setFont(text_font)
+        self.caption.textChanged.connect(self.limitCaptionLength)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.label_2 = QtWidgets.QLabel(Dialog)
         self.label_2.setGeometry(QtCore.QRect(20, 90, 161, 21))
@@ -84,6 +85,12 @@ class Ui_AddNote(object):
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
+    def limitCaptionLength(self):
+        max_length = 40
+        if len(self.caption.toPlainText()) > max_length:
+            cursor = self.caption.textCursor()
+            cursor.deletePreviousChar()    
+
     def getInputs(self):
         return self.caption.toPlainText(), self.description.toPlainText()
 
@@ -111,14 +118,5 @@ class Ui_AddNote(object):
                         "border-radius:15%;\n"
                         "border: 1px solid gray;\n"
                         "}" )
-def main():
-    app = QApplication(sys.argv)
-    planner = Ui_AddNote()
-    planner.show()
-    app.exec()
-
-if __name__ == "__main__":
-    main()
-
 
 

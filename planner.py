@@ -57,9 +57,10 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
         self.fmt.setBackground(QColor(255, 165, 0, 100))
     
         self.data = {}
-        file_exists = path.isfile(path.join(path.dirname(__file__), "data.json"))
+        file_path = "E:\\ежедневник\\data.json"
+        file_exists = path.isfile(file_path)
         if file_exists:
-            with open("data.json", "r") as json_file:
+            with open(file_path, "r") as json_file:
                 self.data = json.load(json_file)
 
         self.cur_date = QDate.currentDate()
@@ -123,7 +124,7 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
                 self.data[date] = [f"{mainNote}: {additionalNote}" if additionalNote else mainNote]
 
             # Сохраняем изменения в файл
-            with open("data.json", "w") as json_file:
+            with open("E:\\ежедневник\\data.json", "w") as json_file:
                 json.dump(self.data, json_file)
 
             # Обновляем отображение заметок
@@ -193,7 +194,7 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
                             self.listView.clear()
 
                     # Сохраняем изменения в файл
-                    with open("data.json", "w") as json_file:
+                    with open("E:\\ежедневник\\data.json", "w") as json_file:
                         json.dump(self.data, json_file)
                 else:
                     print("Удаление отменено")
@@ -235,7 +236,8 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
         return date
     
     def closeEvent(self, e):
-        with open("data.json", "w") as json_file:
+        file_path = "E:\\ежедневник\\data.json"
+        with open(file_path, "w") as json_file:
             json.dump(self.data, json_file)
         e.accept()
 

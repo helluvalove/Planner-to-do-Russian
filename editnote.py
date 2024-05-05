@@ -50,6 +50,7 @@ class Ui_EditNoteDialog(object):
         self.caption.setFont(text_font)
         self.caption.setObjectName("caption")
         self.caption.setGeometry(QtCore.QRect(0, 0, 311, 100))
+        self.caption.textChanged.connect(self.limitCaptionLength)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.label_2 = QtWidgets.QLabel(Dialog)
         self.label_2.setGeometry(QtCore.QRect(20, 90, 161, 21))
@@ -82,6 +83,12 @@ class Ui_EditNoteDialog(object):
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+    def limitCaptionLength(self):
+        max_length = 40
+        if len(self.caption.toPlainText()) > max_length:
+            cursor = self.caption.textCursor()
+            cursor.deletePreviousChar()    
 
     def getInputs(self):
         return self.caption.toPlainText(), self.description.toPlainText()
