@@ -8,14 +8,14 @@ class HighlightButton(QPushButton):
         self.setMouseTracking(True)
 
     def enterEvent(self, event):
-        self.setStyleSheet("#pushButton_2:hover, #pushButton_3:hover, #pushButton_4:hover, #pushButton_5:hover {\n"
+        self.setStyleSheet("#pushButton_2:hover, #pushButton_3:hover, #pushButton_4:hover, #pushButton_5:hover, #pushButton_6:hover {\n"
                             "background-color: #dbb44b;\n"
                             "}")
 
 class Ui_MainWindowDaily(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(861, 465)
+        MainWindow.resize(900, 500)
         font = QtGui.QFont("Bahnschrift Light", 14)
         button_font = QtGui.QFont("Bahnschrift Light", 13)
         label_font = QtGui.QFont("Bahnschrift", 18)
@@ -38,6 +38,20 @@ class Ui_MainWindowDaily(object):
                                 "border: 1px solid gray;\n"
                                 "}")
         self.pushButton_2.setObjectName("pushButton_2")
+
+        self.pushButton_6 = HighlightButton(self.centralWidget)
+        self.pushButton_6.setFont(button_font)
+        self.pushButton_6.setGeometry(QtCore.QRect(440, 430, 300, 41))
+        font.setBold(False)
+        font.setWeight(50)
+        self.pushButton_6.setMouseTracking(False)
+        self.pushButton_6.setStyleSheet("#pushButton_6 {\n"
+                                        "background-color: #F4DF96;\n"
+                                        "border-radius:15%;\n"
+                                        "border: 1px solid gray;\n"
+                                        "}")
+        self.pushButton_6.setObjectName("pushButton_6")
+
         self.calendarWidget = QtWidgets.QCalendarWidget(self.centralWidget) 
         self.calendarWidget.setGeometry(QtCore.QRect(20, 20, 401, 401))
         self.calendarWidget.setFocusPolicy(QtCore.Qt.StrongFocus)
@@ -246,32 +260,43 @@ class Ui_MainWindowDaily(object):
         self.pushButton_3.setText(_translate("MainWindow", "Добавить"))
         self.pushButton_4.setText(_translate("MainWindow", "Изменить"))
         self.pushButton_5.setText(_translate("MainWindow", "Удалить"))
+        self.pushButton_6.setText(_translate("MainWindow", "Изменить пароль"))
         self.label_date.setText(_translate("MainWindow", "Суббота, Апрель 20, 2024"))
 
 
     def enterEvent(self, event):
-        self.setStyleSheet("#pushButton_2:hover, #pushButton_3:hover, #pushButton_4:hover, #pushButton_5:hover {\n"
+        self.setStyleSheet("#pushButton_2:hover, #pushButton_3:hover, #pushButton_4:hover, #pushButton_5:hover, #pushButton_6:hover {\n"
                         "background-color: #F8E71C;\n"
                         "}"
+                           
                         "#pushButton_2 {\n"
                         "background-color: #F4DF96;\n"
                         "border-radius:15%;\n"
                         "border: 1px solid gray;\n"
                         "}"
+                           
                         "#pushButton_3 {\n"
                         "background-color: #F4DF96;\n"
                         "border-radius:15%;\n"
                         "border: 1px solid gray;\n"
                         "}" 
+                           
                         "#pushButton_4 {\n"
                         "background-color: #F4DF96;\n"
                         "border-radius:15%;\n"
                         "border: 1px solid gray;\n"
                         "}"
+                           
                         "#pushButton_5 {\n"
                         "background-color: #F4DF96;\n"
                         "border-radius:15%;\n"
                         "border: 1px solid gray;\n"
+                        "}"
+                           
+                        "#pushButton_6 {\n"
+                        "background-color: #F4DF96;\n"
+                        "border-radius:15%;\n"
+                        "border: 1px solid gray;\n"   
                         "}"
 )
 
