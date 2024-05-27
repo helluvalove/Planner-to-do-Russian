@@ -24,9 +24,9 @@ class Ui_AddNote(object):
         Dialog.setStyleSheet("#Dialog {\n"
 "background-color: #FCF1C9;\n"
 "}")
-        font = QtGui.QFont("Bahnschrift Light", 15)
-        button_font = QtGui.QFont("Bahnschrift Light", 13)
-        text_font = QtGui.QFont("Bahnschrift Light", 13)
+        font = QtGui.QFont("Bahnschrift", 15)
+        button_font = QtGui.QFont("Bahnschrift", 13)
+        text_font = QtGui.QFont("Bahnschrift", 13)
         self.label = QtWidgets.QLabel(Dialog)
         self.label.setGeometry(QtCore.QRect(20, 20, 101, 16))
         self.label.setFont(font)

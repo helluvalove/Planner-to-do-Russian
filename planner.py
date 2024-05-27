@@ -3,6 +3,7 @@ from editnote import Ui_EditNoteDialog
 from delnote import Ui_DelNote
 from opennote import Ui_OpenNoteTwo
 from mainwindowdaily import Ui_MainWindowDaily
+from passw import Ui_PasswordChangeDialog
 from PyQt5 import QtWidgets
 import sys
 from datetime import datetime
@@ -31,12 +32,12 @@ class PasswordDialog(QDialog):
     def __init__(self, is_first_time, parent=None):
         super().__init__(parent)
         self.is_first_time = is_first_time
-        self.setWindowTitle('Set Password' if is_first_time else 'Enter Password')
+        self.setWindowTitle('Установите пароль' if is_first_time else 'Вход')
         self.setFixedSize(300, 150)
 
         self.layout = QtWidgets.QVBoxLayout()
 
-        self.label = QtWidgets.QLabel('Set a password:' if is_first_time else 'Enter your password:')
+        self.label = QtWidgets.QLabel('Установите пароль:' if is_first_time else 'Введите свой пароль:')
         self.layout.addWidget(self.label)
 
         self.password_input = QtWidgets.QLineEdit()
@@ -66,8 +67,6 @@ def save_password(password):
     with open(PASSWORD_FILE, 'w') as file:
         json.dump(data, file)
 
-
-
 def load_password():
     if not path.exists(PASSWORD_FILE):
         return None
@@ -81,10 +80,6 @@ def load_password():
             print(f"Error decrypting password: {e}")
             return None
     return None
-
-
-
-
 
 class AddNoteDialog(QDialog, Ui_AddNote):
     def __init__(self, parent=None):
@@ -394,18 +389,17 @@ def truncate_text(text, max_length=50):
 def change_pass():
     dialog = PasswordDialog(is_first_time=True)
     if dialog.exec_() == QDialog.Accepted:
-
         user_password = dialog.get_password()
         if user_password:  # Only save if user entered a password
             save_password(user_password)
-            QtWidgets.QMessageBox.information(None, 'Success', 'Password set successfully!')
+            QtWidgets.QMessageBox.information(None, 'Успешно', 'Пароль успешно установлен!')
         else:
             if path.exists(PASSWORD_FILE):
                 with open(PASSWORD_FILE, 'w') as file:
                     json.dump({}, file)
-            QtWidgets.QMessageBox.information(None, 'Info', 'No password set. Notes will not be protected.')
+            QtWidgets.QMessageBox.information(None, 'Информация', 'Пароль не установлен. Записи не будут защищены.')
     else:
-        sys.exit(0)  # Exit if user cancels the dialog
+        QtWidgets.QMessageBox.information(None, 'Информация', 'Изменение пароля отменено.')
 
 def main():
     app = QApplication(sys.argv)
@@ -417,9 +411,9 @@ def main():
             user_password = dialog.get_password()
             if user_password:  # Only save if user entered a password
                 save_password(user_password)
-                QtWidgets.QMessageBox.information(None, 'Success', 'Password set successfully!')
+                QtWidgets.QMessageBox.information(None, 'Успешно', 'Пароль успешно установлен!')
             else:
-                QtWidgets.QMessageBox.information(None, 'Info', 'No password set. Notes will not be protected.')
+                QtWidgets.QMessageBox.information(None, 'Информация', 'Пароль не установлен. Записи не будут защищены.')
             run_main_app(app)
         else:
             sys.exit(0)  # Exit if user cancels the dialog

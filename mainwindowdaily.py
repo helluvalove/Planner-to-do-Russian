@@ -41,7 +41,7 @@ class Ui_MainWindowDaily(object):
 
         self.pushButton_6 = HighlightButton(self.centralWidget)
         self.pushButton_6.setFont(button_font)
-        self.pushButton_6.setGeometry(QtCore.QRect(440, 430, 300, 41))
+        self.pushButton_6.setGeometry(QtCore.QRect(440, 430, 300, 35))
         font.setBold(False)
         font.setWeight(50)
         self.pushButton_6.setMouseTracking(False)
@@ -72,7 +72,6 @@ class Ui_MainWindowDaily(object):
 "\n"
 "#qt_calendar_prevmonth,\n"
 "#qt_calendar_nextmonth {\n"
-#"    qproperty-icon: none;\n"
 "    border: none;\n"
 "\n"
 "    min-width: 13px;\n"
@@ -87,12 +86,10 @@ class Ui_MainWindowDaily(object):
 "\n"
 "#qt_calendar_prevmonth {\n"
 "    margin-left: 5px;\n"
-#"    image: url(:/desktop/left.png);\n"
 "}\n"
 "\n"
 "#qt_calendar_nextmonth {\n"
 "    margin-right: 5px;\n"
-#"    image: url(:/desktop/right.png);\n"
 "}\n"
 "\n"
 "#qt_calendar_prevmonth:hover,\n"
@@ -139,10 +136,6 @@ class Ui_MainWindowDaily(object):
 "    font-size: 13px;\n"
 "}\n"
 "\n"
-#"#qt_calendar_yearedit::down-button:hover,\n"
-#"#qt_calendar_yearedit::up-button:hover {\n"
-#"    background-color: #F4DF96;\n"
-#"}\n"
 "\n"
 "#calendarWidget QToolButton QMenu {\n"
 "    background-color: #F4DF96;\n"

@@ -20,10 +20,10 @@ class Ui_OpenNoteTwo(object):
     def setupUi(self, MainWindow, MainNote, AdditionalNote):
         self.Main_note = MainNote
         self.Addit_note = AdditionalNote
-        font = QtGui.QFont("Bahnschrift Light", 15)
-        font_label = QtGui.QFont("Bahnschrift Light", 16)
+        font = QtGui.QFont("Bahnschrift", 15)
+        font_label = QtGui.QFont("Bahnschrift", 16)
         font_label.setBold(True)
-        button_font = QtGui.QFont("Bahnschrift Light", 13)
+        button_font = QtGui.QFont("Bahnschrift", 13)
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(438, 320)
         MainWindow.setStyleSheet("#MainWindow {\n"
@@ -37,7 +37,7 @@ class Ui_OpenNoteTwo(object):
         self.centralwidget.setObjectName("centralwidget")
         self.pushButton = HighlightButton(MainWindow)
         self.pushButton.setFont(button_font)
-        self.pushButton.setGeometry(QtCore.QRect(360, 280, 61, 24))     
+        self.pushButton.setGeometry(QtCore.QRect(360, 280, 61, 30))     
         self.pushButton.setObjectName("pushButton")
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(25, 30, 401, 21))
@@ -75,6 +75,7 @@ class Ui_OpenNoteTwo(object):
         self.textBrowser.setObjectName("textBrowser")
         self.textBrowser.setOpenExternalLinks(False)  # Отключаем возможность открывать внешние ссылки
         self.textBrowser.setReadOnly(True)  
+        self.textBrowser.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
 
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
@@ -93,12 +94,11 @@ class Ui_OpenNoteTwo(object):
         if not self.Addit_note:
             self.scrollArea.hide()
             self.textBrowser.hide()
-            self.pushButton.setGeometry(QtCore.QRect(360, 100, 61, 24))
-            MainWindow.setFixedSize(438, 150)
+            self.pushButton.setGeometry(QtCore.QRect(320, 80, 61, 30))
+            MainWindow.setFixedSize(400, 120)
         else:
             self.textBrowser.setPlainText(self.Addit_note)
-            self.pushButton.setGeometry(QtCore.QRect(360, 280, 61, 24))
-
+            self.pushButton.setGeometry(QtCore.QRect(360, 280, 61, 30))
 
 if __name__ == "__main__":
     import sys
