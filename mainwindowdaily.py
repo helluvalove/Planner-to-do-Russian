@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QLocale
 from PyQt5.QtWidgets import QPushButton
 
 class HighlightButton(QPushButton):
@@ -16,8 +16,8 @@ class Ui_MainWindowDaily(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(900, 500)
-        font = QtGui.QFont("Bahnschrift Light", 14)
-        button_font = QtGui.QFont("Bahnschrift Light", 13)
+        font = QtGui.QFont("Bahnschrift", 14)
+        button_font = QtGui.QFont("Bahnschrift", 13)
         label_font = QtGui.QFont("Bahnschrift", 18)
         MainWindow.setFont(font)
         self.centralWidget = QtWidgets.QWidget(MainWindow)  
@@ -53,6 +53,7 @@ class Ui_MainWindowDaily(object):
         self.pushButton_6.setObjectName("pushButton_6")
 
         self.calendarWidget = QtWidgets.QCalendarWidget(self.centralWidget) 
+        self.calendarWidget.setLocale(QLocale(QLocale.Russian))
         self.calendarWidget.setGeometry(QtCore.QRect(20, 20, 401, 401))
         self.calendarWidget.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.calendarWidget.setToolTip("")
@@ -201,6 +202,7 @@ class Ui_MainWindowDaily(object):
 "}")
         self.pushButton_5.setObjectName("pushButton_5")
         self.label_date = QtWidgets.QLabel(self.centralWidget) 
+        self.label_date.setLocale(QLocale(QLocale.Russian))
         self.label_date.setFont(label_font)
         self.label_date.setGeometry(QtCore.QRect(580, 20, 251, 41))
         self.label_date.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)

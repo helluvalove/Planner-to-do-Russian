@@ -3,7 +3,6 @@ from editnote import Ui_EditNoteDialog
 from delnote import Ui_DelNote
 from opennote import Ui_OpenNoteTwo
 from mainwindowdaily import Ui_MainWindowDaily
-from passw import Ui_PasswordChangeDialog
 from PyQt5 import QtWidgets
 import sys
 from datetime import datetime
@@ -18,8 +17,9 @@ from PyQt5.QtWidgets import (
     QMainWindow,
     QListWidgetItem, QSizePolicy
 )
-from PyQt5.QtCore import QDate, Qt, QTimer, QTime
+from PyQt5.QtCore import QDate, Qt, QTimer, QTime, QLocale
 from PyQt5.QtGui import QTextCharFormat, QColor
+from PyQt5 import QtGui, QtWidgets
 from os import path
 from cryptography.fernet import Fernet, InvalidToken
 
@@ -31,13 +31,30 @@ DATA_FILE = "data.json"  # Define the path to the data file
 class PasswordDialog(QDialog):
     def __init__(self, is_first_time, parent=None):
         super().__init__(parent)
+        self.setObjectName('enter_pass')
         self.is_first_time = is_first_time
         self.setWindowTitle('Установите пароль' if is_first_time else 'Вход')
         self.setFixedSize(300, 150)
+        font = QtGui.QFont("Bahnschrift", 14)
+        self.setFont(font)
+        self.setStyleSheet("#enter_pass {\n"
+                           "background-color: #FCF1C9"
+                           "}"
+                           "QPushButton {\n"
+                            "background-color: #F4DF96;\n"
+                            "border-radius: 9%;\n"
+                            "border: 1px solid gray;\n"
+                            "width: 55px;"
+                            "height: 25px;"
+                            "}\n"
+                            "QPushButton:hover {\n"
+                            "background-color: #dbb44b;\n"
+                            "}")
 
         self.layout = QtWidgets.QVBoxLayout()
 
         self.label = QtWidgets.QLabel('Установите пароль:' if is_first_time else 'Введите свой пароль:')
+        self.label.setStyleSheet("font-weight: bold;")
         self.layout.addWidget(self.label)
 
         self.password_input = QtWidgets.QLineEdit()
@@ -45,6 +62,8 @@ class PasswordDialog(QDialog):
         self.layout.addWidget(self.password_input)
 
         self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        self.button_box.button(QtWidgets.QDialogButtonBox.Ok).setText('Ок')
+        self.button_box.button(QtWidgets.QDialogButtonBox.Cancel).setText('Отмена')
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
         self.layout.addWidget(self.button_box)
@@ -316,10 +335,13 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
 
     def labelDate(self):
         select = self.calendarWidget.selectedDate()
+        self.label_date.setLocale(QLocale(QLocale.Russian))
         weekday, month = select.dayOfWeek(), select.month()
         day, year = str(select.day()), str(select.year())
-        week_day, word_month = QDate.longDayName(weekday), QDate.longMonthName(month)
-        self.label_date.setText(week_day + ", " + word_month + " " + day + ", " + year)
+        russian_locale = QLocale(QLocale.Russian, QLocale.Russia)
+        week_day = russian_locale.dayName(weekday)
+        word_month = russian_locale.monthName(month)
+        self.label_date.setText(week_day + ", " + day + ' ' + word_month + " " ", " + year)
 
     def toggleAddEditDeleteButtons(self):
         enabled = self.calendarWidget.selectedDate() >= QDate.currentDate()
@@ -392,14 +414,56 @@ def change_pass():
         user_password = dialog.get_password()
         if user_password:  # Only save if user entered a password
             save_password(user_password)
-            QtWidgets.QMessageBox.information(None, 'Успешно', 'Пароль успешно установлен!')
+            msg = QtWidgets.QMessageBox()
+            msg.setStyleSheet("QMessageBox {background-color: #FCF1C9}\n"
+                              "QPushButton {\n"
+                              "background-color: #F4DF96;\n"
+                              "border-radius: 9%;\n"
+                              "border: 1px solid gray;\n"
+                              "width: 55px;\n"
+                              "height: 25px;\n"
+                              "}\n"
+                              "QPushButton:hover {\n"
+                              "background-color: #dbb44b;\n"
+                              "}")
+            msg.setText('Пароль успешно установлен!')
+            msg.setWindowTitle('Успешно')
+            msg.exec_()
         else:
             if path.exists(PASSWORD_FILE):
                 with open(PASSWORD_FILE, 'w') as file:
                     json.dump({}, file)
-            QtWidgets.QMessageBox.information(None, 'Информация', 'Пароль не установлен. Записи не будут защищены.')
+            msg = QtWidgets.QMessageBox()
+            msg.setStyleSheet("QMessageBox {background-color: #FCF1C9}\n"
+                              "QPushButton {\n"
+                              "background-color: #F4DF96;\n"
+                              "border-radius: 9%;\n"
+                              "border: 1px solid gray;\n"
+                              "width: 55px;\n"
+                              "height: 25px;\n"
+                              "}\n"
+                              "QPushButton:hover {\n"
+                              "background-color: #dbb44b;\n"
+                              "}")
+            msg.setText('Пароль не установлен. Записи не будут защищены.')
+            msg.setWindowTitle('Предупреждение')
+            msg.exec_()
     else:
-        QtWidgets.QMessageBox.information(None, 'Информация', 'Изменение пароля отменено.')
+        msg = QtWidgets.QMessageBox()
+        msg.setStyleSheet("QMessageBox {background-color: #FCF1C9}\n"
+                              "QPushButton {\n"
+                              "background-color: #F4DF96;\n"
+                              "border-radius: 9%;\n"
+                              "border: 1px solid gray;\n"
+                              "width: 55px;\n"
+                              "height: 25px;\n"
+                              "}\n"
+                              "QPushButton:hover {\n"
+                              "background-color: #dbb44b;\n"
+                              "}")
+        msg.setText('Изменение пароля отменено')
+        msg.setWindowTitle('Отмена')
+        msg.exec_()
 
 def main():
     app = QApplication(sys.argv)
@@ -411,9 +475,37 @@ def main():
             user_password = dialog.get_password()
             if user_password:  # Only save if user entered a password
                 save_password(user_password)
-                QtWidgets.QMessageBox.information(None, 'Успешно', 'Пароль успешно установлен!')
+                msg = QtWidgets.QMessageBox()
+                msg.setStyleSheet("QMessageBox {background-color: #FCF1C9}\n"
+                                "QPushButton {\n"
+                                "background-color: #F4DF96;\n"
+                                "border-radius: 9%;\n"
+                                "border: 1px solid gray;\n"
+                                "width: 55px;\n"
+                                "height: 25px;\n"
+                                "}\n"
+                                "QPushButton:hover {\n"
+                                "background-color: #dbb44b;\n"
+                                "}")
+                msg.setText('Пароль успешно установлен!')
+                msg.setWindowTitle('Успешно')
+                msg.exec_()
             else:
-                QtWidgets.QMessageBox.information(None, 'Информация', 'Пароль не установлен. Записи не будут защищены.')
+                msg = QtWidgets.QMessageBox()
+                msg.setStyleSheet("QMessageBox {background-color: #FCF1C9}\n"
+                              "QPushButton {\n"
+                              "background-color: #F4DF96;\n"
+                              "border-radius: 9%;\n"
+                              "border: 1px solid gray;\n"
+                              "width: 55px;\n"
+                              "height: 25px;\n"
+                              "}\n"
+                              "QPushButton:hover {\n"
+                              "background-color: #dbb44b;\n"
+                              "}")
+                msg.setText('Пароль не установлен. Записи не будут защищены.')
+                msg.setWindowTitle('Предупреждение')
+                msg.exec_()
             run_main_app(app)
         else:
             sys.exit(0)  # Exit if user cancels the dialog
@@ -427,14 +519,41 @@ def main():
                     return
                 else:
                     attempts -= 1
-                    QtWidgets.QMessageBox.warning(None, 'Error', f'Invalid password! {attempts} attempts left.')
+                    msg = QtWidgets.QMessageBox()
+                    msg.setStyleSheet("QMessageBox {background-color: #FCF1C9; height: 300px}\n"
+                              "QPushButton {\n"
+                              "background-color: #F4DF96;\n"
+                              "border-radius: 9%;\n"
+                              "border: 1px solid gray;\n"
+                              "width: 55px;\n"
+                              "height: 25px;\n"
+                              "}\n"
+                              "QPushButton:hover {\n"
+                              "background-color: #dbb44b;\n"
+                              "}")
+                    msg.setText(f'Неправильный пароль. Осталось {attempts} попыток')
+                    msg.setWindowTitle('Ошибка')
+                    msg.exec_()
             else:
-                QtWidgets.QMessageBox.information(None, 'Info', 'Exiting application.')
                 sys.exit(0)  # Exit if user cancels the dialog
 
         if attempts == 0:
             clear_notes()
-            QtWidgets.QMessageBox.critical(None, 'Error', 'All attempts failed. All notes have been deleted.')
+            msg = QtWidgets.QMessageBox()
+            msg.setStyleSheet("QMessageBox {background-color: #FCF1C9; height: 300px}\n"
+                        "QPushButton {\n"
+                        "background-color: #F4DF96;\n"
+                        "border-radius: 9%;\n"
+                        "border: 1px solid gray;\n"
+                        "width: 55px;\n"
+                        "height: 25px;\n"
+                        "}\n"
+                        "QPushButton:hover {\n"
+                        "background-color: #dbb44b;\n"
+                        "}")
+            msg.setText(f'Попытки закончились. Все ваши записи удалены')
+            msg.setWindowTitle('Ошибка')
+            msg.exec_()
             sys.exit(0)
 def clear_notes():
     # Clear both notes and password data
@@ -447,6 +566,8 @@ def clear_notes():
             json.dump({}, file)
 
 def run_main_app(app):
+    russian_locale = QLocale(QLocale.Russian)
+    QLocale.setDefault(russian_locale)
     planner = DailyPlanner()
     planner.show()
     app.exec()
