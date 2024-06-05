@@ -70,6 +70,27 @@ class PasswordDialog(QDialog):
 
         self.setLayout(self.layout)
 
+    def accept(self):
+        password = self.get_password()
+        if 4 <= len(password) <= 12:
+            super().accept()
+        else:
+            msg = QtWidgets.QMessageBox()
+            msg.setStyleSheet("QMessageBox {background-color: #FCF1C9}\n"
+                              "QPushButton {\n"
+                              "background-color: #F4DF96;\n"
+                              "border-radius: 9%;\n"
+                              "border: 1px solid gray;\n"
+                              "width: 55px;\n"
+                              "height: 25px;\n"
+                              "}\n"
+                              "QPushButton:hover {\n"
+                              "background-color: #dbb44b;\n"
+                              "}")
+            msg.setText('Пароль должен содержать от 4 до 12 символов')
+            msg.setWindowTitle('Ошибка')
+            msg.exec_()
+
     def get_password(self):
         return self.password_input.text()
 
@@ -520,7 +541,7 @@ def main():
         dialog = PasswordDialog(is_first_time=True)
         if dialog.exec_() == QDialog.Accepted:
             user_password = dialog.get_password()
-            if user_password:  # Only save if user entered a password
+            if user_password:
                 save_password(user_password)
                 msg = QtWidgets.QMessageBox()
                 msg.setStyleSheet("QMessageBox {background-color: #FCF1C9}\n"
@@ -555,7 +576,7 @@ def main():
                 msg.exec_()
             run_main_app(app)
         else:
-            sys.exit(0)  # Exit if user cancels the dialog
+            sys.exit(0)
     else:
         while attempts > 0:
             dialog = PasswordDialog(is_first_time=False)
@@ -582,7 +603,7 @@ def main():
                     msg.setWindowTitle('Ошибка')
                     msg.exec_()
             else:
-                sys.exit(0)  # Exit if user cancels the dialog
+                sys.exit(0)
 
         if attempts == 0:
             clear_notes()
@@ -602,6 +623,7 @@ def main():
             msg.setWindowTitle('Ошибка')
             msg.exec_()
             sys.exit(0)
+            
 def clear_notes():
     # Clear both notes and password data
     if path.exists(DATA_FILE):
