@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import (
     QLCDNumber,
     QDialog,
     QMainWindow,
-    QListWidgetItem, QSizePolicy
+    QListWidgetItem, QSizePolicy, QMenu
 )
 from PyQt5.QtCore import QDate, Qt, QTimer, QTime, QLocale
 from PyQt5.QtGui import QTextCharFormat, QColor
@@ -123,7 +123,7 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle("Ежедневник")
-        self.setFixedSize(861,490)
+        self.setFixedSize(861, 490)
         self.initUI()
 
     def initUI(self):
@@ -131,10 +131,8 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
         self.fmt.setBackground(QColor(255, 165, 0, 100))
 
         self.data = {}
-        file_path = "C:\\Users\\MarsVilo\\Desktop\\pythonProject\\newrep-Uchebnaya-Praktika\\data.json"
-        file_exists = path.isfile(file_path)
-        if file_exists:
-            with open(file_path, "r") as json_file:
+        if path.isfile(DATA_FILE):
+            with open(DATA_FILE, "r") as json_file:
                 encrypted_data = json.load(json_file)
                 try:
                     self.data = {date: [self.decrypt_data(note) for note in notes] for date, notes in encrypted_data.items()}
@@ -172,6 +170,8 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
         self.labelDate()
         self.showDateInfo()
         self.listView.itemDoubleClicked.connect(self.showFullNote)
+        self.listView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.listView.customContextMenuRequested.connect(self.contextMenuEvent)
 
         self.lcd = self.lcdNumber
         self.lcd.setSegmentStyle(QLCDNumber.SegmentStyle.Filled)
@@ -181,6 +181,35 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
         timer.timeout.connect(self.showTime)
         timer.start(1000)
         self.showTime()
+
+    def contextMenuEvent(self, position):
+        try:
+            menu = QMenu()
+            addPointerAction = menu.addAction("Закрепить/открепить заметку")
+            action = menu.exec_(self.listView.viewport().mapToGlobal(position))
+
+            if action == addPointerAction:
+                self.togglePointerInNote()
+
+        except Exception as e:
+            print(f"Error handling context menu event: {e}")
+
+    def togglePointerInNote(self):
+        currentRow = self.listView.currentRow()
+        if currentRow >= 0:
+            date = self.getDate()
+            note_data = self.data[date][currentRow]
+            decrypted_note = self.decrypt_data(note_data)
+
+            if decrypted_note.startswith("📌"):
+                decrypted_note = decrypted_note[2:].strip()  # Удаляем символ и пробел после него
+            else:
+                decrypted_note = "📌 " + decrypted_note
+
+            encrypted_note = self.encrypt_data(decrypted_note)
+            self.data[date][currentRow] = encrypted_note
+            self.saveData()
+            self.showDateInfo()
 
     def selectToday(self):
         self.calendarWidget.setSelectedDate(QDate.currentDate())
@@ -229,12 +258,15 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
 
         if item:
             # Получаем полные данные из элемента списка
-            note_data = item.data(Qt.UserRole)
-            mainNote = note_data["mainNote"]
-            additionalNote = note_data["additionalNote"]
+            note_data = self.decrypt_data(self.data[date][row])
+            mainNote, additionalNote = (note_data.split(":", 1) + [""])[:2]  # Разделяем данные на основную и дополнительную часть
+
+            # Убираем "📌" из заголовка, если он там есть
+            if mainNote.startswith("📌"):
+                mainNote = mainNote[2:].strip()
 
             # Создаем диалоговое окно редактирования записей
-            dialog = QtWidgets.QDialog()
+            dialog = QDialog()
             ui = Ui_EditNoteDialog()
             ui.setupUi(dialog)
 
@@ -244,12 +276,13 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
 
             if dialog.exec_() == QDialog.Accepted:
                 editedMainNote, editedAdditionalNote = ui.getInputs()
-
                 # Убираем пробелы с обоих концов строк, полученных из диалогового окна
                 editedMainNote = editedMainNote.strip()
                 editedAdditionalNote = editedAdditionalNote.strip()
                 if not editedMainNote:
                     return
+                if note_data.startswith("📌"):  # Проверяем, была ли заметка закреплена
+                    editedMainNote = "📌 " + editedMainNote  # Возвращаем "📌" в заголовок, если заметка была закреплена
                 editedNote = f"{editedMainNote}: {editedAdditionalNote}" if editedAdditionalNote else editedMainNote
                 encrypted_note = self.encrypt_data(editedNote)
 
@@ -297,13 +330,27 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
         date = self.getDate()
         self.listView.clear()
         self.listView.setFixedWidth(401)
+
+        pinned_notes = []
+        regular_notes = []
+
         if date in self.data:
             for note in self.data[date]:
                 decrypted_note = self.decrypt_data(note)
-                if ":" in decrypted_note:
-                    mainNote, additionalNote = decrypted_note.split(":", 1)
+                if decrypted_note.startswith("📌"):
+                    pinned_notes.append(decrypted_note)
                 else:
-                    mainNote, additionalNote = decrypted_note, ""
+                    regular_notes.append(decrypted_note)
+
+            notes = pinned_notes + regular_notes
+
+            self.data[date] = [self.encrypt_data(note) for note in notes]
+
+            for note in notes:
+                if ":" in note:
+                    mainNote, additionalNote = note.split(":", 1)
+                else:
+                    mainNote, additionalNote = note, ""
                 listItem, widget = createCustomListItem(str(mainNote), str(additionalNote))
 
                 widget.setFixedWidth(300)
@@ -328,7 +375,7 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
         e.accept()
 
     def saveData(self):
-        file_path = "C:\\Users\\MarsVilo\\Desktop\\pythonProject\\newrep-Uchebnaya-Praktika\\data.json"
+        file_path = "/Users/maryday/Documents/reposgitmain/newrep-Uchebnaya-Praktika/data.json"
         with open(file_path, "w") as json_file:
             encrypted_data = {date: [self.encrypt_data(note) for note in notes] for date, notes in self.data.items()}
             json.dump(encrypted_data, json_file)
