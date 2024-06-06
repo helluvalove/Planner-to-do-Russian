@@ -20,13 +20,16 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import QDate, Qt, QTimer, QTime, QLocale
 from PyQt5.QtGui import QTextCharFormat, QColor
 from PyQt5 import QtGui, QtWidgets
+import os
 from os import path
 from cryptography.fernet import Fernet, InvalidToken
 
 # Замените на ваш сгенерированный ключ
 ENCRYPTION_KEY = b'aSO-mTaOE72BQS3Nm1hvX_yO5yDEHTYUI207oFYI8Cs='
 fernet = Fernet(ENCRYPTION_KEY)
-DATA_FILE = "data.json"  # Define the path to the data file
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_FILE = path.join(CURRENT_DIR, "data.json")
+PASSWORD_FILE = path.join(CURRENT_DIR, "password_data.json")
 
 class PasswordDialog(QDialog):
     def __init__(self, is_first_time, parent=None):
@@ -87,14 +90,12 @@ class PasswordDialog(QDialog):
                               "QPushButton:hover {\n"
                               "background-color: #dbb44b;\n"
                               "}")
-            msg.setText('Пароль должен содержать от 4 до 12 символов')
+            msg.setText(f'<span style="font-weight:bold;">Пароль должен содержать от 4 до 12 символов')
             msg.setWindowTitle('Ошибка')
             msg.exec_()
 
     def get_password(self):
         return self.password_input.text()
-
-PASSWORD_FILE = "password_data.json"  # Define the path to the password file
 
 def save_password(password):
     # Save only non-empty passwords
@@ -396,8 +397,7 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
         e.accept()
 
     def saveData(self):
-        file_path = "/Users/maryday/Documents/reposgitmain/newrep-Uchebnaya-Praktika/data.json"
-        with open(file_path, "w") as json_file:
+        with open(DATA_FILE, "w") as json_file:
             encrypted_data = {date: [self.encrypt_data(note) for note in notes] for date, notes in self.data.items()}
             json.dump(encrypted_data, json_file)
 
@@ -494,7 +494,7 @@ def change_pass():
                               "QPushButton:hover {\n"
                               "background-color: #dbb44b;\n"
                               "}")
-            msg.setText('Пароль успешно установлен!')
+            msg.setText(f'<span style="font-weight:bold;">Пароль успешно установлен!</span>')
             msg.setWindowTitle('Успешно')
             msg.exec_()
         else:
@@ -529,7 +529,7 @@ def change_pass():
                               "QPushButton:hover {\n"
                               "background-color: #dbb44b;\n"
                               "}")
-        msg.setText('Изменение пароля отменено')
+        msg.setText(f'<span style="font-weight:bold;">Изменение пароля отменено</span>')
         msg.setWindowTitle('Отмена')
         msg.exec_()
 
@@ -555,7 +555,7 @@ def main():
                                 "QPushButton:hover {\n"
                                 "background-color: #dbb44b;\n"
                                 "}")
-                msg.setText('Пароль успешно установлен!')
+                msg.setText(f'<span style="font-weight:bold;">Пароль успешно установлен!</span>')
                 msg.setWindowTitle('Успешно')
                 msg.exec_()
             else:
@@ -599,7 +599,7 @@ def main():
                               "QPushButton:hover {\n"
                               "background-color: #dbb44b;\n"
                               "}")
-                    msg.setText(f'Неправильный пароль. Осталось {attempts} попыток')
+                    msg.setText(f'<span style="font-weight:bold;">Неправильный пароль. Осталось {attempts} попыток</span>')
                     msg.setWindowTitle('Ошибка')
                     msg.exec_()
             else:
@@ -619,7 +619,7 @@ def main():
                         "QPushButton:hover {\n"
                         "background-color: #dbb44b;\n"
                         "}")
-            msg.setText(f'Попытки закончились. Все ваши записи удалены')
+            msg.setText(f'<span style="font-weight:bold;">Попытки закончились. Все ваши записи удалены</span>')
             msg.setWindowTitle('Ошибка')
             msg.exec_()
             sys.exit(0)
