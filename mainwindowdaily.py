@@ -54,6 +54,7 @@ class Ui_MainWindowDaily(object):
 
         self.calendarWidget = QtWidgets.QCalendarWidget(self.centralWidget) 
         self.calendarWidget.setLocale(QLocale(QLocale.Russian))
+        self.calendarWidget.setDateEditEnabled(False)
         self.calendarWidget.setGeometry(QtCore.QRect(20, 20, 401, 401))
         self.calendarWidget.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.calendarWidget.setToolTip("")
