@@ -57,7 +57,7 @@ class PasswordDialog(QDialog):
         self.layout = QtWidgets.QVBoxLayout()
 
         self.label = QtWidgets.QLabel('Установите пароль:' if is_first_time else 'Введите свой пароль:')
-        self.label.setStyleSheet("font-weight: bold;")
+        self.label.setStyleSheet("font-weight: bold; font-size: 15px")
         self.layout.addWidget(self.label)
 
         self.password_input = QtWidgets.QLineEdit()
@@ -90,7 +90,7 @@ class PasswordDialog(QDialog):
                               "QPushButton:hover {\n"
                               "background-color: #dbb44b;\n"
                               "}")
-            msg.setText(f'<span style="font-weight:bold;">Пароль должен содержать от 4 до 12 символов')
+            msg.setText(f'<span style="font-weight:bold; font-size:15px;">Пароль должен содержать от 4 до 12 символов')
             msg.setWindowTitle('Ошибка')
             msg.exec_()
 
@@ -494,7 +494,7 @@ def change_pass():
                               "QPushButton:hover {\n"
                               "background-color: #dbb44b;\n"
                               "}")
-            msg.setText(f'<span style="font-weight:bold;">Пароль успешно установлен!</span>')
+            msg.setText(f'<span style="font-weight:bold; font-size:15px;">Пароль успешно установлен!</span>')
             msg.setWindowTitle('Успешно')
             msg.exec_()
         else:
@@ -529,7 +529,7 @@ def change_pass():
                               "QPushButton:hover {\n"
                               "background-color: #dbb44b;\n"
                               "}")
-        msg.setText(f'<span style="font-weight:bold;">Изменение пароля отменено</span>')
+        msg.setText(f'<span style="font-weight:bold;font-size:15px;">Изменение пароля отменено</span>')
         msg.setWindowTitle('Отмена')
         msg.exec_()
 
@@ -555,7 +555,7 @@ def main():
                                 "QPushButton:hover {\n"
                                 "background-color: #dbb44b;\n"
                                 "}")
-                msg.setText(f'<span style="font-weight:bold;">Пароль успешно установлен!</span>')
+                msg.setText(f'<span style="font-weight:bold; font-size:15px;">Пароль успешно установлен!</span>')
                 msg.setWindowTitle('Успешно')
                 msg.exec_()
             else:
@@ -599,7 +599,7 @@ def main():
                               "QPushButton:hover {\n"
                               "background-color: #dbb44b;\n"
                               "}")
-                    msg.setText(f'<span style="font-weight:bold;">Неправильный пароль. Осталось {attempts} попыток</span>')
+                    msg.setText(f'<span style="font-weight:bold; font-size:15px;">Неправильный пароль. Осталось {attempts} попыток</span>')
                     msg.setWindowTitle('Ошибка')
                     msg.exec_()
             else:
@@ -619,7 +619,7 @@ def main():
                         "QPushButton:hover {\n"
                         "background-color: #dbb44b;\n"
                         "}")
-            msg.setText(f'<span style="font-weight:bold;">Попытки закончились. Все ваши записи удалены</span>')
+            msg.setText(f'<span style="font-weight:bold; font-size:15px;">Попытки закончились. Все ваши записи удалены</span>')
             msg.setWindowTitle('Ошибка')
             msg.exec_()
             sys.exit(0)
