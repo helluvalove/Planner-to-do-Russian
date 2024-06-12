@@ -1,6 +1,42 @@
+import platform
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QLocale
 from PyQt5.QtWidgets import QPushButton
+from screeninfo import get_monitors
+try:
+    from Quartz import CGDisplayBounds, CGMainDisplayID, CGDisplayScreenSize
+    print("Quartz imported successfully.")
+except ImportError as e:
+    print(f"Error importing Quartz: {e}")
+
+def get_screen_density_windows():
+    monitors = get_monitors()
+    for monitor in monitors:
+        width_mm = monitor.width_mm  # Ширина экрана в миллиметрах
+        height_mm = monitor.height_mm  # Высота экрана в миллиметрах
+        width_px = monitor.width  # Ширина экрана в пикселях
+        height_px = monitor.height  # Высота экрана в пикселях
+
+        # Плотность пикселей (PPI - pixels per inch)
+        width_dpi = (width_px / (width_mm / 25.4))
+        height_dpi = (height_px / (height_mm / 25.4))
+
+        return width_dpi, height_dpi
+
+def get_screen_density_mac():
+    display_id = CGMainDisplayID()
+    display_bounds = CGDisplayBounds(display_id)
+    display_width_px = display_bounds.size.width
+    display_height_px = display_bounds.size.height
+    display_size_mm = CGDisplayScreenSize(display_id)
+    display_width_mm = display_size_mm.width
+    display_height_mm = display_size_mm.height
+
+    # Плотность пикселей (PPI - pixels per inch)
+    width_dpi = (display_width_px / (display_width_mm / 25.4))
+    height_dpi = (display_height_px / (display_height_mm / 25.4))
+
+    return width_dpi, height_dpi
 
 class HighlightButton(QPushButton):
     def __init__(self, *args, **kwargs):
@@ -13,12 +49,23 @@ class HighlightButton(QPushButton):
                             "}")
 
 class Ui_MainWindowDaily(object):
+    def __init__(self):
+        self.average_dpi = None
+
     def setupUi(self, MainWindow):
+
+        if platform.system() == 'Darwin':
+            from Quartz import CGDisplayBounds, CGMainDisplayID, CGDisplayScreenSize
+            width_dpi, height_dpi = get_screen_density_mac()
+            self.average_dpi = (width_dpi + height_dpi) / 2
+        else:
+            width_dpi, height_dpi = get_screen_density_windows()
+            self.average_dpi = (width_dpi + height_dpi) / 2
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(900, 500)
-        font = QtGui.QFont("Bahnschrift", 14)
-        button_font = QtGui.QFont("Bahnschrift", 13)
-        label_font = QtGui.QFont("Bahnschrift", 18)
+        MainWindow.resize(int(900 * (self.average_dpi / 127.5)), int(500 * (self.average_dpi / 127.5)))
+        font = QtGui.QFont("Verdana")
+        button_font = QtGui.QFont("Verdana")
+        label_font = QtGui.QFont("Verdana")
         MainWindow.setFont(font)
         self.centralWidget = QtWidgets.QWidget(MainWindow)  
         self.centralWidget.setStyleSheet("#centralwidget {\n"
@@ -28,7 +75,7 @@ class Ui_MainWindowDaily(object):
         self.centralWidget.setFont(font)  
         self.pushButton_2 = HighlightButton(self.centralWidget)  
         self.pushButton_2.setFont(button_font)  
-        self.pushButton_2.setGeometry(QtCore.QRect(440, 20, 111, 41))
+        self.pushButton_2.setGeometry(QtCore.QRect(int(440 * (self.average_dpi / 127.5)), int(20 * (self.average_dpi / 127.5)), int(111 * (self.average_dpi / 127.5)), int(41 * (self.average_dpi / 127.5))))
         font.setBold(False)
         font.setWeight(50)
         self.pushButton_2.setMouseTracking(False)
@@ -41,7 +88,7 @@ class Ui_MainWindowDaily(object):
 
         self.pushButton_6 = HighlightButton(self.centralWidget)
         self.pushButton_6.setFont(button_font)
-        self.pushButton_6.setGeometry(QtCore.QRect(440, 430, 300, 35))
+        self.pushButton_6.setGeometry(QtCore.QRect(int(440 * (self.average_dpi / 127.5)), int(430 * (self.average_dpi / 127.5)), int(300 * (self.average_dpi / 127.5)), int(35 * (self.average_dpi / 127.5))))
         font.setBold(False)
         font.setWeight(50)
         self.pushButton_6.setMouseTracking(False)
@@ -55,11 +102,12 @@ class Ui_MainWindowDaily(object):
         self.calendarWidget = QtWidgets.QCalendarWidget(self.centralWidget) 
         self.calendarWidget.setLocale(QLocale(QLocale.Russian))
         self.calendarWidget.setDateEditEnabled(False)
-        self.calendarWidget.setGeometry(QtCore.QRect(20, 20, 401, 401))
+        self.calendarWidget.setGeometry(QtCore.QRect(int(20 * (self.average_dpi / 127.5)), int(20 * (self.average_dpi / 127.5)), int(401 * (self.average_dpi / 127.5)), int(401 * (self.average_dpi / 127.5))))
         self.calendarWidget.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.calendarWidget.setToolTip("")
         self.calendarWidget.setStatusTip("")
         self.calendarWidget.setAutoFillBackground(True)
+
         self.calendarWidget.setStyleSheet("#calendarWidget QWidget {\n"
 "    alternate-background-color: #F4DF96;\n"
 "}\n"
@@ -108,14 +156,14 @@ class Ui_MainWindowDaily(object):
 "    color:#000;\n"
 "    margin: 5px;\n"
 "    border-radius: 5px;\n"
-"    font-size: 13px;\n"
+f"    font-size: {int(13 * (self.average_dpi / 127.5))}px;\n"
 "    padding: 0 10px;\n"
 "}\n"
 "\n"
 "#qt_calendar_monthbutton {\n"
 "    width: 110px;\n"
 "    color: #000;\n"
-"    font-size: 13px;\n"
+f"    font-size: {int(14 * (self.average_dpi / 127.5))}px;\n"
 "    margin: 5px 0;\n"
 "    border-radius: 5px;\n"
 "    padding: 0px 2px;\n"
@@ -135,7 +183,7 @@ class Ui_MainWindowDaily(object):
 "    min-width: 53px;\n"
 "    color: #000;\n"
 "    background: transparent;\n"
-"    font-size: 13px;\n"
+f"    font-size: {int(13 * (self.average_dpi / 127.5))}px;\n"
 "}\n"
 "\n"
 "\n"
@@ -177,7 +225,7 @@ class Ui_MainWindowDaily(object):
         self.calendarWidget.setObjectName("calendarWidget")
         self.pushButton_3 = HighlightButton(self.centralWidget)  
         self.pushButton_3.setFont(button_font) 
-        self.pushButton_3.setGeometry(QtCore.QRect(440, 380, 121, 41))
+        self.pushButton_3.setGeometry(QtCore.QRect(int(440 * (self.average_dpi / 127.5)), int(380 * (self.average_dpi / 127.5)), int(121 * (self.average_dpi / 127.5)), int(41 * (self.average_dpi / 127.5))))
         self.pushButton_3.setStyleSheet("#pushButton_3 {\n"
 "background-color: #F4DF96;\n"
 "border-radius:15%;\n"
@@ -186,7 +234,7 @@ class Ui_MainWindowDaily(object):
         self.pushButton_3.setObjectName("pushButton_3")
         self.pushButton_4 = HighlightButton(self.centralWidget)  
         self.pushButton_4.setFont(button_font)  
-        self.pushButton_4.setGeometry(QtCore.QRect(580, 380, 121, 41))
+        self.pushButton_4.setGeometry(QtCore.QRect(int(580 * (self.average_dpi / 127.5)), int(380 * (self.average_dpi / 127.5)), int(121 * (self.average_dpi / 127.5)), int(41 * (self.average_dpi / 127.5))))
         self.pushButton_4.setStyleSheet("#pushButton_4 {\n"
 "background-color: #F4DF96;\n"
 "border-radius:15%;\n"
@@ -195,7 +243,7 @@ class Ui_MainWindowDaily(object):
         self.pushButton_4.setObjectName("pushButton_4")
         self.pushButton_5 = HighlightButton(self.centralWidget)  
         self.pushButton_5.setFont(button_font) 
-        self.pushButton_5.setGeometry(QtCore.QRect(720, 380, 121, 41))
+        self.pushButton_5.setGeometry(QtCore.QRect(int(720 * (self.average_dpi / 127.5)), int(380 * (self.average_dpi / 127.5)), int(121 * (self.average_dpi / 127.5)), int(41 * (self.average_dpi / 127.5))))
         self.pushButton_5.setStyleSheet("#pushButton_5 {\n"
 "background-color: #F4DF96;\n"
 "border-radius:15%;\n"
@@ -205,17 +253,18 @@ class Ui_MainWindowDaily(object):
         self.label_date = QtWidgets.QLabel(self.centralWidget) 
         self.label_date.setLocale(QLocale(QLocale.Russian))
         self.label_date.setFont(label_font)
-        self.label_date.setGeometry(QtCore.QRect(580, 20, 251, 41))
+        self.label_date.setGeometry(QtCore.QRect(int(580 * (self.average_dpi / 127.5)), int(20 * (self.average_dpi / 127.5)), int(251 * (self.average_dpi / 127.5)), int(41 * (self.average_dpi / 127.5))))
         self.label_date.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.label_date.setObjectName("label")
+        self.label_date.setStyleSheet(f"font-size: {int(17 * (self.average_dpi / 127.5))}px;")
         self.lcdNumber = QtWidgets.QLCDNumber(self.centralWidget)  
         self.lcdNumber.setFont(font)  
-        self.lcdNumber.setGeometry(QtCore.QRect(770, 430, 64, 23))
-        self.lcdNumber.setMinimumWidth(80) 
+        self.lcdNumber.setGeometry(QtCore.QRect(int(770 * (self.average_dpi / 127.5)), int(430 * (self.average_dpi / 127.5)), int(64 * (self.average_dpi / 127.5)), int(23 * (self.average_dpi / 127.5))))
+        self.lcdNumber.setMinimumWidth(int(80 * (self.average_dpi / 127.5)))
         self.lcdNumber.setObjectName("lcdNumber")
         self.scrollArea = QtWidgets.QScrollArea(self.centralWidget)  
         self.scrollArea.setFont(font)
-        self.scrollArea.setGeometry(QtCore.QRect(440, 70, 401, 291))
+        self.scrollArea.setGeometry(QtCore.QRect(int(440 * (self.average_dpi / 127.5)), int(70 * (self.average_dpi / 127.5)), int(401 * (self.average_dpi / 127.5)), int(291 * (self.average_dpi / 127.5))))
         self.scrollArea.setStyleSheet("#scrollArea {\n"
 "border-radius: 70%;\n"
 "}")
@@ -224,14 +273,14 @@ class Ui_MainWindowDaily(object):
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scrollAreaWidgetContents = QtWidgets.QWidget(self.scrollArea)
         self.scrollAreaWidgetContents.setFont(font)
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 401, 291))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, int(401 * (self.average_dpi / 127.5)), int(291 * (self.average_dpi / 127.5))))
         self.scrollAreaWidgetContents.setStyleSheet("#scrollAreaWidgetContents {\n"
 "border-radius: 50%;\n"
 "}")
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.listView = QtWidgets.QListWidget(self.scrollAreaWidgetContents)
         self.listView.setFont(font)  
-        self.listView.setGeometry(QtCore.QRect(0, 0, 401, 291))
+        self.listView.setGeometry(QtCore.QRect(0, 0, int(401 * (self.average_dpi / 127.5)), int(291 * (self.average_dpi / 127.5))))
         self.listView.setStyleSheet("""
         QListView::item {
             height: 40px;
@@ -258,7 +307,6 @@ class Ui_MainWindowDaily(object):
         self.pushButton_5.setText(_translate("MainWindow", "Удалить"))
         self.pushButton_6.setText(_translate("MainWindow", "Изменить пароль"))
         self.label_date.setText(_translate("MainWindow", "Суббота, Апрель 20, 2024"))
-
 
     def enterEvent(self, event):
         self.setStyleSheet("#pushButton_2:hover, #pushButton_3:hover, #pushButton_4:hover, #pushButton_5:hover, #pushButton_6:hover {\n"
