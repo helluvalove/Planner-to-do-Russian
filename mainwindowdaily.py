@@ -1,4 +1,6 @@
+import os
 import platform
+import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QLocale
 from PyQt5.QtWidgets import QPushButton
@@ -38,6 +40,13 @@ def get_screen_density_mac():
 
     return width_dpi, height_dpi
 
+def resources_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 class HighlightButton(QPushButton):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -53,7 +62,8 @@ class Ui_MainWindowDaily(object):
         self.average_dpi = None
 
     def setupUi(self, MainWindow):
-
+        icon = QtGui.QIcon(resources_path("planner.png"))
+        MainWindow.setWindowIcon(icon)
         if platform.system() == 'Darwin':
             from Quartz import CGDisplayBounds, CGMainDisplayID, CGDisplayScreenSize
             width_dpi, height_dpi = get_screen_density_mac()
@@ -282,8 +292,8 @@ f"    font-size: {int(13 * (self.average_dpi / 127.5))}px;\n"
         self.listView.setFont(font)  
         self.listView.setGeometry(QtCore.QRect(0, 0, int(401 * (self.average_dpi / 127.5)), int(291 * (self.average_dpi / 127.5))))
         self.listView.setStyleSheet("""
-        QListView::item {
-            height: 40px;
+        QListView::item {\n"
+        f"    height: {int(401 * (self.average_dpi / 127.5))}px;"
         }
         QListView {
             border: 1px solid gray;

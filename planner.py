@@ -6,7 +6,7 @@ from delnote import Ui_DelNote
 from opennote import Ui_OpenNoteTwo
 from mainwindowdaily import Ui_MainWindowDaily
 from screeninfo import get_monitors
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 import sys
 from datetime import datetime
 import json
@@ -22,7 +22,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import QDate, Qt, QTimer, QTime, QLocale
 import subprocess
-from PyQt5.QtGui import QTextCharFormat, QColor
+from PyQt5.QtGui import QTextCharFormat, QColor, QPixmap, QIcon
 from PyQt5 import QtGui, QtWidgets
 import os
 from os import path
@@ -147,6 +147,11 @@ def get_screen_density_mac():
 class PasswordDialog(QDialog):
     def __init__(self, is_first_time, parent=None):
         super().__init__(parent)
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+
+        pixmap = QPixmap(32, 32)
+        pixmap.fill(Qt.transparent)
+        self.setWindowIcon(QIcon(pixmap))
         if platform.system() == 'Darwin':
             from Quartz import CGDisplayBounds, CGMainDisplayID, CGDisplayScreenSize
             width_dpi, height_dpi = get_screen_density_mac()
@@ -157,6 +162,7 @@ class PasswordDialog(QDialog):
         self.setObjectName('enter_pass')
         self.is_first_time = is_first_time
         self.setWindowTitle('Установите пароль' if is_first_time else 'Вход')
+
         if platform.system() == 'Darwin':
             from Quartz import CGDisplayBounds, CGMainDisplayID, CGDisplayScreenSize
             width_dpi, height_dpi = get_screen_density_mac()
@@ -218,6 +224,10 @@ class PasswordDialog(QDialog):
             super().accept()
         else:
             msg = QtWidgets.QMessageBox()
+            pixmap = QPixmap(32, 32)
+            pixmap.fill(Qt.transparent)
+            msg.setWindowIcon(QIcon(pixmap))
+
             msg.setStyleSheet("QMessageBox {background-color: #FCF1C9}\n"
                               "QPushButton {\n"
                               "background-color: #F4DF96;\n"
@@ -232,13 +242,17 @@ class PasswordDialog(QDialog):
             msg.setText(
                 f'<span style="font-weight:bold; font-size: {int(14 * (self.average_dpi / 127.5))}px;">Пароль должен содержать от 4 до 12 символов')
             msg.setWindowTitle('Ошибка')
+            pixmap = QPixmap(32, 32)
+            pixmap.fill(Qt.transparent)
+            msg.setWindowIcon(QIcon(pixmap))
+
             msg.exec_()
 
     def get_password(self):
         return self.password_input.text()
 
 def save_password(password):
-    # Сохранение пароля (за исключением пустого)
+    # Save only non-empty passwords
     if password:
         encrypted_password = fernet.encrypt(password.encode()).decode()
         data = {'password': encrypted_password}
@@ -268,7 +282,7 @@ def load_password():
         try:
             return fernet.decrypt(encrypted_password.encode()).decode()
         except InvalidToken as e:
-            print(f"Ошибка: {e}")
+            print(f"Error decrypting password: {e}")
             return None
     return None
 
@@ -276,6 +290,7 @@ class AddNoteDialog(QDialog, Ui_AddNote):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
+        self.setWindowIcon(QtGui.QIcon(None))
         self.setWindowTitle("Добавление записи")
 
     def getInputs(self):
@@ -322,7 +337,7 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
                     self.data = {date: [self.decrypt_data(note) for note in notes] for date, notes in
                                  encrypted_data.items()}
                 except InvalidToken as e:
-                    print(f"Ошибка: {e}")
+                    print(f"Error decrypting data: {e}")
                     self.data = {}
 
         self.cur_date = QDate.currentDate()
@@ -377,7 +392,7 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
                 self.togglePointerInNote()
 
         except Exception as e:
-            print(f"Ошибка: {e}")
+            print(f"Error handling context menu event: {e}")
 
     def togglePointerInNote(self):
         currentRow = self.listView.currentRow()
@@ -406,7 +421,7 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
         try:
             return fernet.decrypt(encrypted_data.encode()).decode()
         except InvalidToken as e:
-            print(f"Ошибка: {e}")
+            print(f"Error decrypting data: {e}")
             return ""
 
     def addNote(self):
@@ -689,6 +704,10 @@ def change_pass():
             msg.setText(
                 f'<span style="font-weight:bold; font-size:{int(14 * (average_dpi / 127.5))}px;">Пароль успешно установлен!</span>')
             msg.setWindowTitle('Успешно')
+            pixmap = QPixmap(32, 32)
+            pixmap.fill(Qt.transparent)
+            msg.setWindowIcon(QIcon(pixmap))
+
             msg.exec_()
         else:
             if path.exists(PASSWORD_FILE):
@@ -711,6 +730,9 @@ def change_pass():
                               "background-color: #dbb44b;\n"
                               "}")
             msg.setText('Пароль не установлен. Записи не будут защищены.')
+            pixmap = QPixmap(32, 32)
+            pixmap.fill(Qt.transparent)
+            msg.setWindowIcon(QIcon(pixmap))
             msg.setWindowTitle('Предупреждение')
             msg.exec_()
     else:
@@ -727,6 +749,9 @@ def change_pass():
                           "background-color: #dbb44b;\n"
                           "}")
         msg.setText(f'<span style="font-weight:bold;font-size:{int(14 * (average_dpi / 127.5))}px;">Изменение пароля отменено</span>')
+        pixmap = QPixmap(32, 32)
+        pixmap.fill(Qt.transparent)
+        msg.setWindowIcon(QIcon(pixmap))
         msg.setWindowTitle('Отмена')
         msg.exec_()
 
@@ -763,6 +788,9 @@ def main():
                 msg.setText(
                     f'<span style="font-weight:bold; font-size:{int(14 * (average_dpi / 127.5))}px;">Пароль успешно установлен!</span>')
                 msg.setWindowTitle('Успешно')
+                pixmap = QPixmap(32, 32)
+                pixmap.fill(Qt.transparent)
+                msg.setWindowIcon(QIcon(pixmap))
                 msg.exec_()
             else:
                 msg = QtWidgets.QMessageBox()
@@ -810,6 +838,9 @@ def main():
                     msg.setText(
                         f'<span style="font-weight:bold; font-size:{int(14 * (average_dpi / 127.5))}px;">Неправильный пароль. Осталось {attempts} попыток</span>')
                     msg.setWindowTitle('Ошибка')
+                    pixmap = QPixmap(32, 32)
+                    pixmap.fill(Qt.transparent)
+                    msg.setWindowIcon(QIcon(pixmap))
                     msg.exec_()
             else:
                 sys.exit(0)
@@ -833,6 +864,9 @@ def main():
                 msg.setText(
                     f'<span style="font-weight:bold; font-size:{int(14 * (average_dpi / 127.5))}px;">Попытки закончились. Все ваши записи удалены</span>')
                 msg.setWindowTitle('Ошибка')
+                pixmap = QPixmap(32, 32)
+                pixmap.fill(Qt.transparent)
+                msg.setWindowIcon(QIcon(pixmap))
                 msg.exec_()
                 sys.exit(0)
 

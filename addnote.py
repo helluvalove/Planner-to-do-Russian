@@ -1,6 +1,8 @@
 import platform
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWidgets import QApplication, QPushButton
 from screeninfo import get_monitors
 try:
@@ -44,6 +46,7 @@ class HighlightButton(QPushButton):
         super().__init__(*args, **kwargs)
         self.setMouseTracking(True)
 
+
         # Устанавливаем стили для обычного состояния кнопки
         self.setStyleSheet("QPushButton {\n"
                             "background-color: #F4DF96;\n"
@@ -85,6 +88,11 @@ class Ui_AddNote(object):
             self.average_dpi = (width_dpi + height_dpi) / 2
 
     def setupUi(self, Dialog):
+        Dialog.setWindowIcon(QtGui.QIcon())  # Устанавливаем пустую иконку
+
+        pixmap = QPixmap(32, 32)
+        pixmap.fill(Qt.transparent)
+        Dialog.setWindowIcon(QIcon(pixmap))
         Dialog.setWindowFlags(Dialog.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
 
         Dialog.setObjectName("Dialog")

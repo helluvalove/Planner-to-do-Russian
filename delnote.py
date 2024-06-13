@@ -1,6 +1,8 @@
 import sys
 import platform
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWidgets import QApplication, QPushButton
 from screeninfo import get_monitors
 try:
@@ -22,7 +24,6 @@ def get_screen_density_windows():
         height_dpi = (height_px / (height_mm / 25.4))
 
         return width_dpi, height_dpi
-
 
 def get_screen_density_mac():
     display_id = CGMainDisplayID()
@@ -65,6 +66,9 @@ class Ui_DelNote(object):
             self.average_dpi = (width_dpi + height_dpi) / 2
 
     def setupUi(self, Dialog):
+        pixmap = QPixmap(32, 32)
+        pixmap.fill(Qt.transparent)
+        Dialog.setWindowIcon(QIcon(pixmap))
         Dialog.setWindowFlags(Dialog.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
 
         Dialog.setObjectName("Dialog")

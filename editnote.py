@@ -1,6 +1,8 @@
 import sys
 import platform
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWidgets import QApplication, QPushButton
 from screeninfo import get_monitors
 try:
@@ -76,6 +78,10 @@ class Ui_EditNoteDialog(object):
         self.enterKeyFilter = None
 
     def setupUi(self, Dialog):
+        pixmap = QPixmap(32, 32)
+        pixmap.fill(Qt.transparent)
+        Dialog.setWindowIcon(QIcon(pixmap))
+
         Dialog.setWindowFlags(Dialog.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
 
         if platform.system() == 'Darwin':
@@ -105,6 +111,8 @@ class Ui_EditNoteDialog(object):
         self.scrollArea.setStyleSheet("#scrollArea{\n"
 "background-color: #FCF1C9;\n"
 f"font-size: {int(16 * (self.average_dpi / 127.5))}px;\n"
+
+
 "}")
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
@@ -157,6 +165,7 @@ f"font-size: {int(16 * (self.average_dpi / 127.5))}px;\n"
         self.scrollArea_2.setWidget(self.scrollAreaWidgetContents_2)
         self.pushButton = HighlightButton(Dialog)
         self.pushButton.setFont(button_font)
+
 
         self.pushButton.setGeometry(QtCore.QRect(int(190 * (self.average_dpi / 127.5)), int(360 * (self.average_dpi / 127.5)), int(81 * (self.average_dpi / 127.5)), int(32 * (self.average_dpi / 127.5))))
         self.pushButton.setObjectName("pushButton")
