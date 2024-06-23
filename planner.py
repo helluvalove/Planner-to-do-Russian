@@ -36,7 +36,6 @@ except ImportError as e:
 from cryptography.fernet import Fernet, InvalidToken
 
 def ensure_writable(file_path):
-    """Проверяет и снимает атрибуты, мешающие записи в файл"""
     if os.path.isfile(file_path):
         if platform.system() == "Windows":
             subprocess.run(["attrib", "-H", file_path], check=True, creationflags=subprocess.CREATE_NO_WINDOW)
@@ -44,7 +43,6 @@ def ensure_writable(file_path):
             subprocess.run(["chmod", "u+w", file_path], check=True)
 
 def set_hidden(file_path):
-    """Устанавливает атрибут 'скрытый' для файла"""
     if os.path.isfile(file_path):
         if platform.system() == "Windows":
             subprocess.run(["attrib", "+H", file_path], check=True, creationflags=subprocess.CREATE_NO_WINDOW)
@@ -52,17 +50,15 @@ def set_hidden(file_path):
             subprocess.run(["chmod", "u-w", file_path], check=True)
 
 def resource_path(relative_path):
-    """Возвращает абсолютный путь к ресурсу, работает для dev и для PyInstaller"""
     base_path = getattr(sys, '_MEIPASS', path.abspath("."))
     return path.join(base_path, relative_path)
 
 def get_app_data_path():
-    """Возвращает путь к директории для данных приложения в зависимости от операционной системы"""
     if platform.system() == "Windows":
         return path.join(os.getenv('APPDATA'), 'Planner')
     elif platform.system() == "Darwin":  # macOS
         return path.join(path.expanduser("~"), 'Library', 'Application Support', 'Planner')
-    else:  # Linux и другие UNIX-подобные системы
+    else:  # Linux и другие UNIX-подобные системы11
         return path.join(path.expanduser("~"), '.config', 'Planner')
 
 ENCRYPTION_KEY = b'aSO-mTaOE72BQS3Nm1hvX_yO5yDEHTYUI207oFYI8Cs='
@@ -72,7 +68,6 @@ DATA_FILE = ".data.json"
 PASSWORD_FILE = ".password_data.json"
 
 def set_hidden(file_path):
-    """Устанавливает атрибут 'скрытый' для файла"""
     if os.path.isfile(file_path):
         if platform.system() == "Windows":
             subprocess.run(["attrib", "+H", file_path], check=True, creationflags=subprocess.CREATE_NO_WINDOW)
@@ -80,7 +75,6 @@ def set_hidden(file_path):
             subprocess.run(["chmod", "u-w", file_path], check=True)
 
 def ensure_writable(file_path):
-    """Проверяет и снимает атрибуты, мешающие записи в файл"""
     if os.path.isfile(file_path):
         if platform.system() == "Windows":
             subprocess.run(["attrib", "-H", file_path], check=True, creationflags=subprocess.CREATE_NO_WINDOW)
@@ -88,7 +82,6 @@ def ensure_writable(file_path):
             subprocess.run(["chmod", "u+w", file_path], check=True)
 
 def initialize_file(file_path):
-    """Инициализирует файл с пустым JSON объектом, если он не существует"""
     if not path.exists(file_path):
         ensure_writable(file_path)
         try:
@@ -101,14 +94,12 @@ def initialize_file(file_path):
             set_hidden(file_path)
 
 def copy_resources():
-    """Копирует файлы данных из ресурсов в рабочую директорию"""
     app_data_path = get_app_data_path()
     os.makedirs(app_data_path, exist_ok=True)
 
     data_file_path = path.join(app_data_path, DATA_FILE)
     password_file_path = path.join(app_data_path, PASSWORD_FILE)
 
-    # Проверка и инициализация файлов
     if not path.exists(data_file_path):
         initialize_file(data_file_path)
 
@@ -118,12 +109,11 @@ def copy_resources():
 def get_screen_density_windows():
     monitors = get_monitors()
     for monitor in monitors:
-        width_mm = monitor.width_mm  # Ширина экрана в миллиметрах
-        height_mm = monitor.height_mm  # Высота экрана в миллиметрах
-        width_px = monitor.width  # Ширина экрана в пикселях
-        height_px = monitor.height  # Высота экрана в пикселях
+        width_mm = monitor.width_mm  
+        height_mm = monitor.height_mm  
+        width_px = monitor.width  
+        height_px = monitor.height  
 
-        # Плотность пикселей (PPI - pixels per inch)
         width_dpi = (width_px / (width_mm / 25.4))
         height_dpi = (height_px / (height_mm / 25.4))
 
@@ -138,13 +128,13 @@ def get_screen_density_mac():
     display_width_mm = display_size_mm.width
     display_height_mm = display_size_mm.height
 
-    # Плотность пикселей (PPI - pixels per inch)
     width_dpi = (display_width_px / (display_width_mm / 25.4))
     height_dpi = (display_height_px / (display_height_mm / 25.4))
 
     return width_dpi, height_dpi
 
 class PasswordDialog(QDialog):
+
     def __init__(self, is_first_time, parent=None):
         super().__init__(parent)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
@@ -326,6 +316,7 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
         self.initUI()
 
     def initUI(self):
+
         self.fmt = QTextCharFormat()
         self.fmt.setBackground(QColor(255, 165, 0, 100))
 
@@ -392,7 +383,7 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
                 self.togglePointerInNote()
 
         except Exception as e:
-            print(f"Error handling context menu event: {e}")
+            print(f"Error: {e}")
 
     def togglePointerInNote(self):
         currentRow = self.listView.currentRow()
@@ -402,7 +393,7 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
             decrypted_note = self.decrypt_data(note_data)
 
             if decrypted_note.startswith("📌"):
-                decrypted_note = decrypted_note[2:].strip()  # Удаляем символ и пробел после него
+                decrypted_note = decrypted_note[2:].strip()
             else:
                 decrypted_note = "📌 " + decrypted_note
 
@@ -421,7 +412,7 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
         try:
             return fernet.decrypt(encrypted_data.encode()).decode()
         except InvalidToken as e:
-            print(f"Error decrypting data: {e}")
+            print(f"Error: {e}")
             return ""
 
     def addNote(self):
@@ -432,12 +423,10 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
             mainNote, additionalNote = ui.getInputs()
             if not mainNote:
                 return
-            # Получаем текущую выбранную дату
             date = self.getDate()
 
             self.calendarWidget.setDateTextFormat(QDate.fromString(date, "ddMMyyyy"), self.fmt)
 
-            # Обновляем данные
             note = f"{mainNote}: {additionalNote}" if additionalNote else mainNote
             encrypted_note = self.encrypt_data(note)
             if date in self.data:
@@ -445,10 +434,8 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
             else:
                 self.data[date] = [encrypted_note]
 
-            # Сохраняем изменения в файл
             self.saveData()
 
-            # Обновляем отображение заметок
             self.showDateInfo()
 
     def editNote(self):
@@ -457,43 +444,35 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
         item = self.listView.item(row)
 
         if item:
-            # Получаем полные данные из элемента списка
             note_data = self.decrypt_data(self.data[date][row])
             mainNote, additionalNote = (note_data.split(":", 1) + [""])[
-                                       :2]  # Разделяем данные на основную и дополнительную часть
+                                       :2]  
 
-            # Убираем "📌" из заголовка, если он там есть
             if mainNote.startswith("📌"):
                 mainNote = mainNote[2:].strip()
 
-            # Создаем диалоговое окно редактирования записей
             dialog = QDialog()
             ui = Ui_EditNoteDialog()
             ui.setupUi(dialog)
 
-            # Устанавливаем значения в поля диалогового окна через объект ui
             ui.caption.setPlainText(mainNote.strip())
             ui.description.setPlainText(additionalNote.strip())
 
             if dialog.exec_() == QDialog.Accepted:
                 editedMainNote, editedAdditionalNote = ui.getInputs()
-                # Убираем пробелы с обоих концов строк, полученных из диалогового окна
                 editedMainNote = editedMainNote.strip()
                 editedAdditionalNote = editedAdditionalNote.strip()
                 if not editedMainNote:
                     return
-                if note_data.startswith("📌"):  # Проверяем, была ли заметка закреплена
-                    editedMainNote = "📌 " + editedMainNote  # Возвращаем "📌" в заголовок, если заметка была закреплена
+                if note_data.startswith("📌"): 
+                    editedMainNote = "📌 " + editedMainNote 
                 editedNote = f"{editedMainNote}: {editedAdditionalNote}" if editedAdditionalNote else editedMainNote
                 encrypted_note = self.encrypt_data(editedNote)
 
-                # Обновляем данные
                 self.data[date][row] = encrypted_note
 
-                # Сохраняем изменения в файл
                 self.saveData()
 
-                # Обновляем отображение заметок
                 self.showDateInfo()
 
     def delNote(self):
@@ -505,16 +484,12 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
                 ui = Ui_DelNote()
                 ui.setupUi(dialog)
                 if dialog.exec_() == QDialog.Accepted:
-                    # Ваш код для удаления записи
                     print("Запись удалена")
-                    # Получаем текущую выбранную дату
                     date = self.getDate()
                     print("Дата, для которой происходит удаление:", date)
 
-                    # Удаляем запись и ее QListWidgetItem из списка записей
                     self.listView.takeItem(currentRow)
 
-                    # Удаляем запись из данных
                     if date in self.data:
                         del self.data[date][currentRow]
                         if not self.data[date]:
@@ -522,7 +497,6 @@ class DailyPlanner(QMainWindow, Ui_MainWindowDaily):
                             self.calendarWidget.setDateTextFormat(QDate.fromString(date, "ddMMyyyy"), QTextCharFormat())
                             self.listView.clear()
 
-                    # Сохраняем изменения в файл
                     self.saveData()
                 else:
                     print("Удаление отменено")
@@ -686,7 +660,7 @@ def change_pass():
     if dialog.exec_() == QDialog.Accepted:
         user_password = dialog.get_password()
 
-        if user_password:  # Сохраняется если пользователь подтвердил ввод пароля
+        if user_password:  
             save_password(user_password)
             msg = QtWidgets.QMessageBox()
             msg.setStyleSheet("QMessageBox {background-color: #FCF1C9}\n"
@@ -871,7 +845,6 @@ def main():
                 sys.exit(0)
 
 def clear_notes():
-    # Очистка записей и пароля
     if path.exists(DATA_FILE):
         ensure_writable(get_app_data_path())
         ensure_writable(DATA_FILE)

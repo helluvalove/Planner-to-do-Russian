@@ -14,12 +14,11 @@ except ImportError as e:
 def get_screen_density_windows():
     monitors = get_monitors()
     for monitor in monitors:
-        width_mm = monitor.width_mm  # Ширина экрана в миллиметрах
-        height_mm = monitor.height_mm  # Высота экрана в миллиметрах
-        width_px = monitor.width  # Ширина экрана в пикселях
-        height_px = monitor.height  # Высота экрана в пикселях
+        width_mm = monitor.width_mm  
+        height_mm = monitor.height_mm  
+        width_px = monitor.width  
+        height_px = monitor.height  
 
-        # Плотность пикселей (PPI - pixels per inch)
         width_dpi = (width_px / (width_mm / 25.4))
         height_dpi = (height_px / (height_mm / 25.4))
 
@@ -34,7 +33,6 @@ def get_screen_density_mac():
     display_width_mm = display_size_mm.width
     display_height_mm = display_size_mm.height
 
-    # Плотность пикселей (PPI - pixels per inch)
     width_dpi = (display_width_px / (display_width_mm / 25.4))
     height_dpi = (display_height_px / (display_height_mm / 25.4))
 
@@ -304,7 +302,7 @@ f"    font-size: {int(13 * (self.average_dpi / 127.5))}px;\n"
         self.listView.setObjectName("listView")
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         MainWindow.setCentralWidget(self.centralWidget)
-
+        self.listView.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -353,6 +351,3 @@ f"    font-size: {int(13 * (self.average_dpi / 127.5))}px;\n"
                         "border: 1px solid gray;\n"   
                         "}"
 )
-
-
-

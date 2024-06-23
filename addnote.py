@@ -15,12 +15,11 @@ from cryptography.fernet import Fernet, InvalidToken
 def get_screen_density_windows():
     monitors = get_monitors()
     for monitor in monitors:
-        width_mm = monitor.width_mm  # Ширина экрана в миллиметрах
-        height_mm = monitor.height_mm  # Высота экрана в миллиметрах
-        width_px = monitor.width  # Ширина экрана в пикселях
-        height_px = monitor.height  # Высота экрана в пикселях
+        width_mm = monitor.width_mm  
+        height_mm = monitor.height_mm 
+        width_px = monitor.width  
+        height_px = monitor.height  
 
-        # Плотность пикселей (PPI - pixels per inch)
         width_dpi = (width_px / (width_mm / 25.4))
         height_dpi = (height_px / (height_mm / 25.4))
 
@@ -35,7 +34,6 @@ def get_screen_density_mac():
     display_width_mm = display_size_mm.width
     display_height_mm = display_size_mm.height
 
-    # Плотность пикселей (PPI - pixels per inch)
     width_dpi = (display_width_px / (display_width_mm / 25.4))
     height_dpi = (display_height_px / (display_height_mm / 25.4))
 
@@ -45,9 +43,6 @@ class HighlightButton(QPushButton):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setMouseTracking(True)
-
-
-        # Устанавливаем стили для обычного состояния кнопки
         self.setStyleSheet("QPushButton {\n"
                             "background-color: #F4DF96;\n"
                             "border-radius: 15%;\n"
@@ -57,18 +52,37 @@ class HighlightButton(QPushButton):
                             "background-color: #dbb44b;\n"
                             "}")
 
+class LimitedTextEdit(QtWidgets.QPlainTextEdit):
+    def __init__(self, max_length=1000, parent=None):
+        super().__init__(parent)
+        self.max_length = max_length
+        self.textChanged.connect(self.check_text_length)
+
+    def check_text_length(self):
+        text = self.toPlainText()
+        if len(text) > self.max_length:
+            self.setPlainText(text[:self.max_length])
+            cursor = self.textCursor()
+            cursor.setPosition(self.max_length)
+            self.setTextCursor(cursor)
+
+    def keyPressEvent(self, event):
+        if len(self.toPlainText()) < self.max_length or event.key() in (QtCore.Qt.Key_Backspace, QtCore.Qt.Key_Delete, QtCore.Qt.Key_Left, QtCore.Qt.Key_Right, QtCore.Qt.Key_Up, QtCore.Qt.Key_Down):
+            super().keyPressEvent(event)
+        else:
+            if not event.text().isprintable():
+                super().keyPressEvent(event)
+
 class EnterKeyFilter(QtCore.QObject):
     def __init__(self, max_width, parent=None):
         super().__init__(parent)
         self.max_width = max_width
 
     def eventFilter(self, obj, event):
-        if event.type() == QtCore.QEvent.KeyPress:
-            if event.key() == QtCore.Qt.Key_Return:
-                # Prevent the Enter key event from being propagated
+        if (event.type() == QtCore.QEvent.KeyPress):
+            if event.key() == QtCore.Qt.Key_Return or (event.modifiers() & QtCore.Qt.ControlModifier):
                 return True
             elif (obj.isWidgetType() and isinstance(obj, QtWidgets.QTextEdit)) and event.key() != QtCore.Qt.Key_Backspace and event.key() != QtCore.Qt.Key_Delete:
-                # Measure the width of the text
                 font_metrics = obj.fontMetrics()
                 text_width = font_metrics.horizontalAdvance(obj.toPlainText() + event.text())
                 if text_width > self.max_width:
@@ -88,7 +102,7 @@ class Ui_AddNote(object):
             self.average_dpi = (width_dpi + height_dpi) / 2
 
     def setupUi(self, Dialog):
-        Dialog.setWindowIcon(QtGui.QIcon())  # Устанавливаем пустую иконку
+        Dialog.setWindowIcon(QtGui.QIcon())  
 
         pixmap = QPixmap(32, 32)
         pixmap.fill(Qt.transparent)
@@ -127,13 +141,14 @@ class Ui_AddNote(object):
         self.scrollAreaWidgetContents.setStyleSheet(f"font-size: {int(13 * (self.average_dpi / 127.5))}px;")
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.scrollAreaWidgetContents.installEventFilter(self.enterKeyFilter)
+        self.scrollAreaWidgetContents.setFont(text_font)
         self.caption = QtWidgets.QTextEdit(self.scrollAreaWidgetContents)
         self.caption.setObjectName("caption")
         self.caption.setGeometry(QtCore.QRect(0, 0, int(311 * (self.average_dpi / 127.5)), int(100 * (self.average_dpi / 127.5))))
         self.caption.setFont(text_font)
         self.label.setStyleSheet(f"font-size: {int(16 * (self.average_dpi / 127.5))}px;")
 
-        self.max_width = self.scrollArea.width() - int(10 * (self.average_dpi / 127.5))  # Adjust based on desired padding
+        self.max_width = self.scrollArea.width() - int(10 * (self.average_dpi / 127.5)) 
         self.enterKeyFilter = EnterKeyFilter(self.max_width)
         self.caption.installEventFilter(self.enterKeyFilter)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
@@ -152,8 +167,9 @@ class Ui_AddNote(object):
         self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, int(309 * (self.average_dpi / 127.5)), int(229 * (self.average_dpi / 127.5))))
         self.scrollAreaWidgetContents_2.setObjectName("scrollAreaWidgetContents_2")
         self.scrollAreaWidgetContents_2.setFont(text_font)
+
         self.scrollAreaWidgetContents_2.setStyleSheet(f"font-size: {int(13 * (self.average_dpi / 127.5))}px;")
-        self.description = QtWidgets.QPlainTextEdit(self.scrollAreaWidgetContents_2)
+        self.description = LimitedTextEdit(max_length=40000, parent=self.scrollAreaWidgetContents_2)
         self.description.setFont(text_font)
         self.description.setStyleSheet(f"font-size: {int(13 * (self.average_dpi / 127.5))}px;")
         self.description.setObjectName("description")
@@ -195,7 +211,6 @@ class Ui_AddNote(object):
         self.pushButton_2.setText(_translate("Dialog", "Ок"))
 
     def enterEvent(self, event):
-        # Устанавливаем стили для состояния наведения
         self.setStyleSheet("#pushButton:hover, #pushButton_2:hover {\n"
                         "background-color: #dbb44b;\n"
                         "}"

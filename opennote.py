@@ -9,16 +9,36 @@ try:
     print("Quartz imported successfully.")
 except ImportError as e:
     print(f"Error importing Quartz: {e}")
+class DynamicFontLabel(QtWidgets.QLabel):
+    def __init__(self, *args, max_width=200, **kwargs):
+        super().__init__(*args, **kwargs)
+        if platform.system() == 'Darwin':
+            from Quartz import CGDisplayBounds, CGMainDisplayID, CGDisplayScreenSize
+            width_dpi, height_dpi = get_screen_density_mac()
+            self.average_dpi = (width_dpi + height_dpi) / 2
+        else:
+            width_dpi, height_dpi = get_screen_density_windows()
+            self.average_dpi = (width_dpi + height_dpi) / 2
+        self.max_width = max_width
+        self.adjust_font_size()
 
+    def adjust_font_size(self):
+        font = QtGui.QFont("Verdana")
+        font_metrics = QtGui.QFontMetrics(font)
+        text_width = font_metrics.horizontalAdvance(self.text())
+        while text_width > self.max_width and font.pointSize() > 1:
+            font.setPointSize(font.pointSize() - 1)
+            self.setFont(font)
+            font_metrics = QtGui.QFontMetrics(font)
+            text_width = font_metrics.horizontalAdvance(self.text())
 def get_screen_density_windows():
     monitors = get_monitors()
     for monitor in monitors:
-        width_mm = monitor.width_mm  # Ширина экрана в миллиметрах
-        height_mm = monitor.height_mm  # Высота экрана в миллиметрах
-        width_px = monitor.width  # Ширина экрана в пикселях
-        height_px = monitor.height  # Высота экрана в пикселях
+        width_mm = monitor.width_mm  
+        height_mm = monitor.height_mm  
+        width_px = monitor.width  
+        height_px = monitor.height  
 
-        # Плотность пикселей (PPI - pixels per inch)
         width_dpi = (width_px / (width_mm / 25.4))
         height_dpi = (height_px / (height_mm / 25.4))
 
@@ -33,7 +53,6 @@ def get_screen_density_mac():
     display_width_mm = display_size_mm.width
     display_height_mm = display_size_mm.height
 
-    # Плотность пикселей (PPI - pixels per inch)
     width_dpi = (display_width_px / (display_width_mm / 25.4))
     height_dpi = (display_height_px / (display_height_mm / 25.4))
 
@@ -44,7 +63,6 @@ class HighlightButton(QPushButton):
         super().__init__(*args, **kwargs)
         self.setMouseTracking(True)
 
-        # Устанавливаем стили для обычного состояния кнопки
         self.setStyleSheet("QPushButton {\n"
                            "background-color: #F4DF96;\n"
                            "border-radius: 10%;\n"
@@ -91,16 +109,21 @@ class Ui_OpenNoteTwo(object):
             QtCore.QRect(int(360 * (self.average_dpi / 127.5)), int(280 * (self.average_dpi / 127.5)),
                          int(61 * (self.average_dpi / 127.5)), int(30 * (self.average_dpi / 127.5))))
         self.pushButton.setObjectName("pushButton")
-        self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(int(25 * (self.average_dpi / 127.5)), int(30 * (self.average_dpi / 127.5)),
+        self.label = DynamicFontLabel(self.centralwidget, max_width=int(401 * (self.average_dpi / 127.5)))
+        font = (QtGui.QFont("Verdana"))
+        font.setBold(True)
+        self.label.setFont(font)
+
+        self.label.setGeometry(QtCore.QRect(int(17 * (self.average_dpi / 127.5)), int(30 * (self.average_dpi / 127.5)),
                                             int(401 * (self.average_dpi / 127.5)),
                                             int(21 * (self.average_dpi / 127.5))))
         self.label.setObjectName("label")
-        self.label.setFont(font_label)
         self.label.setStyleSheet("#label {\n"
-                                         f"font-size: {int(17 * (self.average_dpi / 127.5))}px;\n"
-                                         "background-color: #FCF1C9;\n"
-                                         "}")
+                                 f"font-size: {int(14.5 * (self.average_dpi / 127.5))}px;\n"
+                                 "background-color: #FCF1C9;\n"
+                                 "}")
+
+
         self.scrollArea = QtWidgets.QScrollArea(self.centralwidget)
         self.scrollArea.setFont(font)
 
@@ -109,7 +132,7 @@ class Ui_OpenNoteTwo(object):
                          int(401 * (self.average_dpi / 127.5)), int(201 * (self.average_dpi / 127.5))))
         self.scrollArea.setStyleSheet("#scrollArea{\n"
                                       "border: None;\n"
-                                      f"font-size: {int(16 * (self.average_dpi / 127.5))}px;\n"
+                                      f"font-size: {int(14.5 * (self.average_dpi / 127.5))}px;\n"
                                       "background-color: #E32636;\n"
                                       "}")
         self.scrollArea.setWidgetResizable(True)
@@ -121,24 +144,25 @@ class Ui_OpenNoteTwo(object):
             QtCore.QRect(0, 0, int(401 * (self.average_dpi / 127.5)), int(201 * (self.average_dpi / 127.5))))
         self.scrollAreaWidgetContents.setStyleSheet("#scrollAreaWidgetContents{\n"
                                                     "border: None;\n"
-                                                    f"font-size: {int(16 * (self.average_dpi / 127.5))}px;\n"
+                                                    f"font-size: {int(14.5 * (self.average_dpi / 127.5))}px;\n"
                                                     "background-color: transparent;\n"
                                                     "}")
         self.scrollAreaWidgetContents.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
 
-        self.textBrowser = QTextBrowser(self.scrollAreaWidgetContents)  # Заменили на QTextBrowser
+        self.textBrowser = QTextBrowser(self.scrollAreaWidgetContents)  
+        font.setBold(False)
         self.textBrowser.setFont(font)
         self.textBrowser.setGeometry(
             QtCore.QRect(0, 0, int(401 * (self.average_dpi / 127.5)), int(201 * (self.average_dpi / 127.5))))
         self.textBrowser.setStyleSheet("#textBrowser{\n"
                                        "border: None;\n"
                                        "background-color: #FFFFFF;\n"
-                                       f"font-size: {int(16 * (self.average_dpi / 127.5))}px;\n"
+                                       f"font-size: {int(14 * (self.average_dpi / 127.5))}px;\n"
                                        "border: 1px solid gray;\n"
                                        "}")
         self.textBrowser.setObjectName("textBrowser")
-        self.textBrowser.setOpenExternalLinks(False)  # Отключаем возможность открывать внешние ссылки
+        self.textBrowser.setOpenExternalLinks(False)  
         self.textBrowser.setReadOnly(True)
         self.textBrowser.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
 
@@ -155,7 +179,6 @@ class Ui_OpenNoteTwo(object):
         self.pushButton.setText(_translate("MainWindow", "ОК"))
         self.label.setText(_translate("MainWindow", self.Main_note))
 
-        # Check if there is additional note
         if not self.Addit_note:
             self.scrollArea.hide()
             self.textBrowser.hide()
